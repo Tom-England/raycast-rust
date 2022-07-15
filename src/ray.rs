@@ -17,10 +17,14 @@ impl Ray{
         return (self.start.0 + x, self.start.1 + y);
     }
     
-    pub fn calc_length(&mut self) -> (f64) {
+    pub fn calc_length(&mut self) -> f64 {
+        return Ray::calc_length_of_ray(self.start, self.end);
+    }
+
+    pub fn calc_length_of_ray(start: (f64, f64), end: (f64, f64)) -> f64{
         // c = sqrt(a^2 + b^2)
-        let a = self.end.0 - self.start.0;
-        let b = self.end.1 - self.start.1;
+        let a = end.0 - start.0;
+        let b = end.1 - start.1;
         let length: f64 = (a * a + b * b).sqrt();
         return length;
     }
@@ -49,13 +53,13 @@ impl Ray{
 		}
 		let t = ((wall_start.0 - self.start.0) * (self.start.1 - self.end.1) - (wall_start.1 - self.start.1) * (self.start.0 - self.end.0)) / den;
 		let u = -((wall_start.0 - wall_end.0) * (wall_start.1 - self.start.1) - (wall_start.1 - wall_end.1) * (wall_start.0 - self.start.0)) / den;
-		if (t > 0.0 && t < 1.0 && u > 0.0) {
+		if t > 0.0 && t < 1.0 && u > 0.0 {
 			//std::cout << "True" << std::endl;
             let mut end: (f64,f64) = (-1.0, -1.0);
             let x = wall_start.0 + t * (wall_end.0 - wall_start.0);
 			let y = wall_start.1 + t * (wall_end.1 - wall_start.1);
 			let mag2 = ((x-self.start.0) * (x - self.start.0)) + ((y - self.start.1) * (y - self.start.1));
-			let mag2old = ((self.end.0 - self.start.0) * (self.end.0 - self.start.0) + (self.end.1 - self.start.1) * (self.end.1 - self.start.1));
+			let mag2old = (self.end.0 - self.start.0) * (self.end.0 - self.start.0) + (self.end.1 - self.start.1) * (self.end.1 - self.start.1);
 			if mag2 < mag2old {
 				end = (x, y);
 			}

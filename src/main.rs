@@ -46,10 +46,12 @@ impl App {
     fn update(&mut self) {
         for i in 0..self.rays.len(){
             self.rays[i].end = self.rays[i].calc_end();
+            self.rays[i].length = self.rays[i].calc_length();
             for j in 0..self.walls.len(){
                 let new_end = self.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
-                if new_end != (-1.0, -1.0){
+                if new_end != (-1.0, -1.0) && (ray::Ray::calc_length_of_ray(self.rays[i].start, new_end) < self.rays[i].length){
                     self.rays[i].end = self.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
+                    self.rays[i].length = self.rays[i].calc_length();
                 }
             }
             
@@ -91,7 +93,9 @@ fn main() {
     
 
     // Add some walls
-    app.walls.push(wall::Wall {start: (50.0, 10.0), end: (50.0, 100.0)});
+    app.walls.push(wall::Wall {start: (50.0, 9.0), end: (50.0, 100.0)});
+    app.walls.push(wall::Wall {start: (70.0, 9.0), end: (70.0, 100.0)});
+    app.walls.push(wall::Wall {start: (10.0, 70.0), end: (100.0, 100.0)});
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
