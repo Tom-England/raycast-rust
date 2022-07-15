@@ -52,7 +52,7 @@ impl App {
                     self.rays[i].end = self.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
                 }
             }
-            self.rays[i].length = self.rays[i].calc_length();
+            
         }
     }
 }
@@ -76,13 +76,19 @@ fn main() {
     };
 
     // Add some rays
-    app.rays.push(ray::Ray {
-        start: (10.0, 10.0),
-        angle: 45.0,
-        max_length: 200.0,
-        end: (10.0, 10.0),
-        length: 0.0,
-    },);
+
+    const FOV:i16 = 80;
+    for i in 0..FOV{
+        app.rays.push(ray::Ray {
+            start: (10.0, 10.0),
+            angle: i as f64,
+            max_length: 200.0,
+            end: (10.0, 10.0),
+            length: 0.0,
+        },);
+    }
+
+    
 
     // Add some walls
     app.walls.push(wall::Wall {start: (50.0, 10.0), end: (50.0, 100.0)});
