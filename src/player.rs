@@ -35,7 +35,8 @@ impl Player {
     }
 
     pub fn gen_rays(&mut self){
-        for i in 0..self.fov{
+        let start: i32 = 0-(self.fov as i32/2);
+        for i in start..(self.fov/2) as i32{
             self.rays.push(ray::Ray {
                 start: (10.0, 10.0),
                 angle: i as f64,
