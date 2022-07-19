@@ -5,6 +5,7 @@ extern crate piston;
 
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
+use piston::{Button, PressEvent};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
@@ -58,6 +59,27 @@ impl App {
             
         }
     }
+
+    pub fn key_press(&mut self, args: &Button) {
+		use piston::Button::Keyboard;
+		use piston::Key;		
+		
+        if *args == Keyboard(Key::Left) {
+            self.play.turn(-2.0);
+        }
+
+        if *args == Keyboard(Key::Right) {
+            self.play.turn(2.0);
+        }
+
+        if *args == Keyboard(Key::Up) {
+            self.play.advance(2.0);
+        }
+
+        if *args == Keyboard(Key::Down) {
+            self.play.advance(-2.0);
+        }
+    }
 }
 
 fn main() {
@@ -97,12 +119,15 @@ fn main() {
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
-            app.update();
             app.render(&args);
         }
 
-        /*if let Some(args) = e.update_args() {
-            app.update(&args);
-        }*/
+        if let Some(args) = e.update_args() {
+            app.update();
+        }
+
+        if let Some(ref args) = e.press_args() {
+            app.key_press(args);
+        }
     }
 }
