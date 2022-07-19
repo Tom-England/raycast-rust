@@ -11,10 +11,11 @@ use piston::window::WindowSettings;
 
 pub mod ray;
 pub mod wall;
+pub mod player;
 
 pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
-    rays: Vec<ray::Ray>,
+    play: player::Player,
     walls: Vec<wall::Wall>
 }
 
@@ -34,7 +35,7 @@ impl App {
             //rectangle(RED, square, transform, gl);
 
             //print!("Drawing line from: {0},{1} to {2},{3}", self.test_ray.start.0, self.test_ray.start.1, self.test_ray.end.0, self.test_ray.end.1);
-            for ray in &self.rays{
+            for ray in &self.play.rays{
                 line(RED, 1.0, [ray.start.0, ray.start.1, ray.end.0, ray.end.1], c.transform, gl);
             }
             for wall in &self.walls{
@@ -44,14 +45,14 @@ impl App {
     }
 
     fn update(&mut self) {
-        for i in 0..self.rays.len(){
-            self.rays[i].end = self.rays[i].calc_end();
-            self.rays[i].length = self.rays[i].calc_length();
+        for i in 0..self.play.rays.len(){
+            self.play.rays[i].end = self.play.rays[i].calc_end();
+            self.play.rays[i].length = self.play.rays[i].calc_length();
             for j in 0..self.walls.len(){
-                let new_end = self.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
-                if new_end != (-1.0, -1.0) && (ray::Ray::calc_length_of_ray(self.rays[i].start, new_end) < self.rays[i].length){
-                    self.rays[i].end = self.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
-                    self.rays[i].length = self.rays[i].calc_length();
+                let new_end = self.play.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
+                if new_end != (-1.0, -1.0) && (ray::Ray::calc_length_of_ray(self.play.rays[i].start, new_end) < self.play.rays[i].length){
+                    self.play.rays[i].end = self.play.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
+                    self.play.rays[i].length = self.play.rays[i].calc_length();
                 }
             }
             
@@ -73,22 +74,18 @@ fn main() {
     // Create a new game and run it.
     let mut app = App {
         gl: GlGraphics::new(opengl),
-        rays: Vec::new(), 
+        play: player::Player{
+            view_direction: 0.0,
+            pos: (10.0, 10.0),
+            rays: Vec::new(),
+            fov: 80
+        },
         walls: Vec::new()
     };
 
     // Add some rays
+    app.play.gen_rays();
 
-    const FOV:i16 = 80;
-    for i in 0..FOV{
-        app.rays.push(ray::Ray {
-            start: (10.0, 10.0),
-            angle: i as f64,
-            max_length: 200.0,
-            end: (10.0, 10.0),
-            length: 0.0,
-        },);
-    }
 
     
 

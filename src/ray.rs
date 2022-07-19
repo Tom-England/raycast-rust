@@ -41,8 +41,8 @@ impl Ray{
         self.end = self.calc_end()
     }
 
-    pub fn draw(&mut self){
-
+    pub fn advance(&mut self, amount: f64){
+        
     }
 
     // Find the point of intesection between a ray and a wall
