@@ -38,7 +38,7 @@ impl Player {
         let start: i32 = 0-(self.fov as i32/2);
         for i in start..(self.fov/2) as i32{
             self.rays.push(ray::Ray {
-                start: (10.0, 10.0),
+                start: self.pos,
                 angle: i as f64,
                 max_length: 200.0,
                 end: (10.0, 10.0),

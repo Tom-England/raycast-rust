@@ -4,9 +4,10 @@ extern crate opengl_graphics;
 extern crate piston;
 
 use std::f64::consts::PI;
+use std::path::Path;
 
 use glutin_window::GlutinWindow as Window;
-use opengl_graphics::{GlGraphics, OpenGL};
+use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 use piston::{Button, PressEvent};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
@@ -40,9 +41,16 @@ impl App {
 
             //print!("Drawing line from: {0},{1} to {2},{3}", self.test_ray.start.0, self.test_ray.start.1, self.test_ray.end.0, self.test_ray.end.1);
             
-            rectangle([0.0,0.0,1.0,1.0], rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 200.0), c.transform, gl);
-            rectangle([0.0,1.0,0.0,1.0], rectangle::rectangle_by_corners(0.0, 201.0, 500.0, 400.0), c.transform, gl);
+            let ts = TextureSettings::new();
+            let sky_image   = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 200.0));
+            let sky_texture = Texture::from_path(Path::new("/home/tom/sky.png"), &ts).unwrap();
 
+            let grass_image   = Image::new().rect(rectangle::rectangle_by_corners(0.0, 200.0, 500.0, 400.0));
+            let grass_texture = Texture::from_path(Path::new("/home/tom/grass.png"), &ts).unwrap();
+
+            let ds = DrawState::default();
+            sky_image.draw(&sky_texture, &ds, c.transform, gl);
+            grass_image.draw(&grass_texture, &ds, c.transform, gl);
 
             let width = 500.0 / self.play.rays.len() as f64;
             for i in 0..self.play.rays.len(){
@@ -132,7 +140,7 @@ fn main() {
         gl: GlGraphics::new(opengl),
         play: player::Player{
             view_direction: 0.0,
-            pos: (10.0, 10.0),
+            pos: (100.0, 100.0),
             rays: Vec::new(),
             fov: 80
         },
