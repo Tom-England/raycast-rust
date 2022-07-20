@@ -42,10 +42,6 @@ impl Ray{
         self.end = self.calc_end()
     }
 
-    pub fn advance(&mut self, amount: f64){
-        
-    }
-
     // Find the point of intesection between a ray and a wall
     pub fn find_intersection(&mut self, wall_start : (f64, f64), wall_end : (f64, f64)) -> (f64, f64){
         let den = (wall_start.0 - wall_end.0) * (self.start.1 - self.end.1) - (wall_start.1 - wall_end.1) * (self.start.0 - self.end.0);

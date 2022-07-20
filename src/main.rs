@@ -7,6 +7,7 @@ use std::f64::consts::PI;
 use std::path::Path;
 
 use glutin_window::GlutinWindow as Window;
+use graphics::Image;
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 use piston::{Button, PressEvent};
 use piston::event_loop::{EventSettings, Events};
@@ -36,22 +37,19 @@ impl App {
             // Clear the screen.
             clear(WHITE, gl);
 
-            // Draw a box rotating around the middle of the screen.
-            //rectangle(RED, square, transform, gl);
+            // Draw Skybox
+            let ts: TextureSettings = TextureSettings::new();
+            let sky_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 200.0));
+            let sky_texture: Texture = Texture::from_path(Path::new("/home/tom/sky.png"), &ts).unwrap();
 
-            //print!("Drawing line from: {0},{1} to {2},{3}", self.test_ray.start.0, self.test_ray.start.1, self.test_ray.end.0, self.test_ray.end.1);
-            
-            let ts = TextureSettings::new();
-            let sky_image   = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 200.0));
-            let sky_texture = Texture::from_path(Path::new("/home/tom/sky.png"), &ts).unwrap();
+            let grass_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 200.0, 500.0, 400.0));
+            let grass_texture: Texture = Texture::from_path(Path::new("/home/tom/grass.png"), &ts).unwrap();
 
-            let grass_image   = Image::new().rect(rectangle::rectangle_by_corners(0.0, 200.0, 500.0, 400.0));
-            let grass_texture = Texture::from_path(Path::new("/home/tom/grass.png"), &ts).unwrap();
-
-            let ds = DrawState::default();
+            let ds: DrawState = DrawState::default();
             sky_image.draw(&sky_texture, &ds, c.transform, gl);
             grass_image.draw(&grass_texture, &ds, c.transform, gl);
 
+            // Draw the level
             let width = 500.0 / self.play.rays.len() as f64;
             for i in 0..self.play.rays.len(){
                 if self.play.rays[i].collided{
@@ -69,19 +67,25 @@ impl App {
                 }
             }
 
-            for ray in &self.play.rays{
-                line(RED, 1.0, [ray.start.0, ray.start.1, ray.end.0, ray.end.1], c.transform, gl);
-            }/*
-            for wall in &self.walls{
-                line(GREEN, 1.0, [wall.start.0, wall.start.1, wall.end.0, wall.end.1], c.transform, gl);
-            }*/
-
-            for cell in &self.map.cells{
-                for wall in &cell.walls{
-                    line(GREEN, 1.0, [wall.start.0, wall.start.1, wall.end.0, wall.end.1], c.transform, gl);
+            let debug: bool = true;
+            // Debug drawing
+            if debug{
+                for ray in &self.play.rays{
+                    line(RED, 1.0, [ray.start.0, ray.start.1, ray.end.0, ray.end.1], c.transform, gl);
+                }
+                for cell in &self.map.cells{
+                    for wall in &cell.walls{
+                        line(GREEN, 1.0, [wall.start.0, wall.start.1, wall.end.0, wall.end.1], c.transform, gl);
+                    }
                 }
             }
+
         });
+    }
+
+    fn create_texture(distance: f64, texture: &graphics::Image, start: u32, end: u32) -> graphics::Image{
+        
+        return Image::new();
     }
 
     fn update(&mut self) {
