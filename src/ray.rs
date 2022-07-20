@@ -6,6 +6,7 @@ pub struct Ray{
     pub angle: f64,
     pub length: f64,
     pub max_length: f64,
+    pub collided: bool
 }
 
 impl Ray{

@@ -3,6 +3,8 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
 
+use std::f64::consts::PI;
+
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::{Button, PressEvent};
@@ -13,11 +15,12 @@ use piston::window::WindowSettings;
 pub mod ray;
 pub mod wall;
 pub mod player;
+pub mod map;
 
 pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
     play: player::Player,
-    walls: Vec<wall::Wall>
+    map: map::Map
 }
 
 impl App {
@@ -36,11 +39,39 @@ impl App {
             //rectangle(RED, square, transform, gl);
 
             //print!("Drawing line from: {0},{1} to {2},{3}", self.test_ray.start.0, self.test_ray.start.1, self.test_ray.end.0, self.test_ray.end.1);
+            
+            rectangle([0.0,0.0,1.0,1.0], rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 200.0), c.transform, gl);
+            rectangle([0.0,1.0,0.0,1.0], rectangle::rectangle_by_corners(0.0, 201.0, 500.0, 400.0), c.transform, gl);
+
+
+            let width = 500.0 / self.play.rays.len() as f64;
+            for i in 0..self.play.rays.len(){
+                if self.play.rays[i].collided{
+                    let view_dist = 1.0 - self.play.rays[i].length/200.0;
+                    let col: f32 = 1.0 * view_dist as f32;
+                    let a = (self.play.rays[i].angle - self.play.view_direction) * PI / 180.0;
+                    let z = self.play.rays[i].length * a.cos();
+                    let max = 400.0 * 20.0;
+                    let mut h = max / z;
+
+                    if h > max { h = max; }
+                    let colour = [col, col, col, 1.0];
+                    let rec = rectangle::rectangle_by_corners(i as f64 * width, 200.0 - h/2.0, i as f64 * width + width, 200.0 - h/2.0 + h);
+                    rectangle(colour, rec, c.transform, gl);
+                }
+            }
+
             for ray in &self.play.rays{
                 line(RED, 1.0, [ray.start.0, ray.start.1, ray.end.0, ray.end.1], c.transform, gl);
-            }
+            }/*
             for wall in &self.walls{
                 line(GREEN, 1.0, [wall.start.0, wall.start.1, wall.end.0, wall.end.1], c.transform, gl);
+            }*/
+
+            for cell in &self.map.cells{
+                for wall in &cell.walls{
+                    line(GREEN, 1.0, [wall.start.0, wall.start.1, wall.end.0, wall.end.1], c.transform, gl);
+                }
             }
         });
     }
@@ -49,14 +80,17 @@ impl App {
         for i in 0..self.play.rays.len(){
             self.play.rays[i].end = self.play.rays[i].calc_end();
             self.play.rays[i].length = self.play.rays[i].calc_length();
-            for j in 0..self.walls.len(){
-                let new_end = self.play.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
-                if new_end != (-1.0, -1.0) && (ray::Ray::calc_length_of_ray(self.play.rays[i].start, new_end) < self.play.rays[i].length){
-                    self.play.rays[i].end = self.play.rays[i].find_intersection(self.walls[j].start, self.walls[j].end);
-                    self.play.rays[i].length = self.play.rays[i].calc_length();
+            self.play.rays[i].collided = false;
+            for cell in &self.map.cells{
+                for wall in cell.walls{
+                    let new_end = self.play.rays[i].find_intersection(wall.start, wall.end);
+                    if new_end != (-1.0, -1.0) && (ray::Ray::calc_length_of_ray(self.play.rays[i].start, new_end) < self.play.rays[i].length){
+                        self.play.rays[i].end = self.play.rays[i].find_intersection(wall.start, wall.end);
+                        self.play.rays[i].length = self.play.rays[i].calc_length();
+                        self.play.rays[i].collided = true;
+                    }
                 }
             }
-            
         }
     }
 
@@ -102,20 +136,30 @@ fn main() {
             rays: Vec::new(),
             fov: 80
         },
-        walls: Vec::new()
+        map: map::Map{
+            cells: Vec::new()
+        }
     };
 
     // Add some rays
     app.play.gen_rays();
 
-
-    
-
     // Add some walls
-    app.walls.push(wall::Wall {start: (50.0, 9.0), end: (50.0, 100.0)});
-    app.walls.push(wall::Wall {start: (70.0, 9.0), end: (70.0, 100.0)});
-    app.walls.push(wall::Wall {start: (10.0, 70.0), end: (100.0, 100.0)});
 
+    let mut cell1: map::Cell = map::Cell{
+        walls: [wall::Wall::default(); 4],
+        pos: (0.0, 0.0),
+        l: 40.0
+    };
+    let mut cell2: map::Cell = map::Cell{
+        walls: [wall::Wall::default(); 4],
+        pos: (1.0, 0.0),
+        l: 40.0
+    };
+    cell1.create_walls();
+    cell2.create_walls();
+    app.map.cells.push(cell1);
+    app.map.cells.push(cell2);
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {

@@ -43,6 +43,7 @@ impl Player {
                 max_length: 200.0,
                 end: (10.0, 10.0),
                 length: 0.0,
+                collided: false
             },);
         }
     }
