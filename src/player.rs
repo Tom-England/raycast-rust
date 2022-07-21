@@ -56,7 +56,7 @@ impl Player {
             self.rays.push(ray::Ray{
                 start: self.pos,
                 angle: start as f64 + (increment * i as f64) ,
-                max_length: 200.0,
+                max_length: 10.0,
                 end: (10.0, 10.0),
                 length: 0.0,
                 collided: false,

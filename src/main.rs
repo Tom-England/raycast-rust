@@ -76,7 +76,7 @@ impl App {
             let a = (ray.angle - view_direction) * PI / 180.0;
             let z = ray.length * a.cos();
             let max = 400.0;
-            let mut h = max*20.0 / z;
+            let mut h = max*1.0 / z;
 
             if h > max { h = max; }
             return h;
@@ -99,7 +99,7 @@ impl App {
         let width = width / rays.len() as f64;
         // For each ray, draw a rectangle in the correct place in the image
         for i in 0..rays.len(){
-            let view_dist = 1.0 - rays[i].length/200.0;
+            let view_dist = 1.0 - rays[i].length/10.0;
             let h: f64 = App::calculate_box_height(&rays[i], view_direction);
             let iter = i as f64;
 
@@ -151,11 +151,11 @@ impl App {
         }
 
         if *args == Keyboard(Key::Up) {
-            self.play.advance(2.0);
+            self.play.advance(0.5);
         }
 
         if *args == Keyboard(Key::Down) {
-            self.play.advance(-2.0);
+            self.play.advance(-0.5);
         }
     }
 }
@@ -176,7 +176,7 @@ fn main() {
         gl: GlGraphics::new(opengl),
         play: player::Player{
             view_direction: 0.0,
-            pos: (100.0, 100.0),
+            pos: (3.0, 3.0),
             rays: Vec::new(),
             fov: 80,
         },
@@ -193,20 +193,31 @@ fn main() {
 
     // Add some walls
 
-    let mut cell1: map::Cell = map::Cell{
+    let mut walls: Vec<map::Cell> = Vec::new();
+    walls.push(map::Cell{
         walls: [wall::Wall::default(); 4],
         pos: (0.0, 0.0),
-        l: 40.0
-    };
-    let mut cell2: map::Cell = map::Cell{
+        l: 1.3
+    });
+    walls.push(map::Cell{
         walls: [wall::Wall::default(); 4],
         pos: (1.0, 0.0),
-        l: 40.0
-    };
-    cell1.create_walls();
-    cell2.create_walls();
-    app.map.cells.push(cell1);
-    app.map.cells.push(cell2);
+        l: 1.3
+    });
+    walls.push(map::Cell{
+        walls: [wall::Wall::default(); 4],
+        pos: (2.0, 0.0),
+        l: 1.3
+    });
+    walls.push(map::Cell{
+        walls: [wall::Wall::default(); 4],
+        pos: (0.0, 1.0),
+        l: 1.3
+    });
+    for mut cell in walls {
+        cell.create_walls();
+        app.map.cells.push(cell);
+    }
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
