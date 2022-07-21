@@ -13,7 +13,7 @@ use piston::{Button, PressEvent};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
-use image::{GenericImage, GenericImageView, ImageBuffer, RgbImage, Pixel, RgbaImage};
+use image::{GenericImage, GenericImageView, ImageBuffer, RgbImage, Pixel, RgbaImage, open, DynamicImage};
 
 pub mod ray;
 pub mod wall;
@@ -23,7 +23,8 @@ pub mod map;
 pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
     play: player::Player,
-    map: map::Map
+    map: map::Map,
+    img: DynamicImage
 }
 
 impl App {
@@ -66,7 +67,7 @@ impl App {
             }*/
 
             let map_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 400.0));
-            let map_img = App::create_texture(&self.play.rays, self.play.view_direction);
+            let map_img = App::create_texture(&self.play.rays, self.play.view_direction, &self.img);
             let map_texture: Texture = Texture::from_image(&map_img, &ts);
             map_image.draw(&map_texture, &ds, c.transform, gl);
 
@@ -99,7 +100,14 @@ impl App {
         return 0.0;
     }
 
-    fn create_texture(rays: &Vec<ray::Ray>, view_direction: f64) -> image::RgbaImage{
+    fn get_pixel(x: f32, y: f32, img: &DynamicImage) -> image::Rgba<u8>{
+        
+        let x_pos = img.dimensions().0 as f32 * x;
+        let y_pos = img.dimensions().1 as f32 * y;
+        return img.get_pixel(x_pos as u32, y_pos as u32);
+    }
+
+    fn create_texture(rays: &Vec<ray::Ray>, view_direction: f64, tex: &DynamicImage) -> image::RgbaImage{
         let mut img: RgbaImage = ImageBuffer::new(500, 400);
         let width = 500.0 / rays.len() as f64;
         // For each ray, draw a rectangle in the correct place in the image
@@ -107,7 +115,8 @@ impl App {
             let view_dist = 1.0 - rays[i].length/200.0;
             let h: f64 = App::calculate_box_height(&rays[i], view_direction);
             let iter = i as f64;
-            let pixel = image::Rgba([(255.0 * view_dist) as u8, (255.0 * view_dist) as u8, (255.0 * view_dist) as u8, 255]);
+            //let pixel = image::Rgba([(255.0 * view_dist) as u8, (255.0 * view_dist) as u8, (255.0 * view_dist) as u8, 255]);
+            let pixel = App::get_pixel(0.1, 0.1, tex);
             for x in (iter * width) as u32..(iter * width+width) as u32{
                 for y in (200.0 - h/2.0) as u32..(200.0 - h/2.0 + h) as u32{
                     img.put_pixel(x, y, pixel)
@@ -179,7 +188,8 @@ fn main() {
         },
         map: map::Map{
             cells: Vec::new()
-        }
+        },
+        img: image::open("/home/tom/projects/raycast-rust/assets/test.jpg").unwrap()
     };
 
     // Add some rays

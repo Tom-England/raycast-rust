@@ -1,5 +1,7 @@
 use std::f64::consts::PI;
 
+use image::ImageBuffer;
+
 use crate::ray;
 
 pub struct Player{
@@ -51,7 +53,7 @@ impl Player {
         let ray_count = 160;
         let start: i32 = 0-(self.fov as i32/2);
         let increment: f64 = self.fov as f64 / ray_count as f64;
-        print!("increment {0}\n", increment);
+        //print!("increment {0}\n", increment);
         for i in 0..ray_count{
             self.rays.push(ray::Ray{
                 start: self.pos,
@@ -59,9 +61,10 @@ impl Player {
                 max_length: 200.0,
                 end: (10.0, 10.0),
                 length: 0.0,
-                collided: false
+                collided: false,
+                tex: image::ImageBuffer::new(1, 1)
             },);
-            print!("angle: {0}", start as f64 + (increment * i as f64) );
+            //print!("angle: {0}", start as f64 + (increment * i as f64) );
         }
     }
 }
