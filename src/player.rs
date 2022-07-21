@@ -62,7 +62,8 @@ impl Player {
                 end: (10.0, 10.0),
                 length: 0.0,
                 collided: false,
-                tex: image::ImageBuffer::new(1, 1)
+                tex: image::ImageBuffer::new(1, 1),
+                wall_pos: 0.0
             },);
             //print!("angle: {0}", start as f64 + (increment * i as f64) );
         }

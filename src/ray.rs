@@ -7,7 +7,8 @@ pub struct Ray{
     pub length: f64,
     pub max_length: f64,
     pub collided: bool,
-    pub tex: image::RgbaImage
+    pub tex: image::RgbaImage,
+    pub wall_pos: f32
 }
 
 impl Ray{

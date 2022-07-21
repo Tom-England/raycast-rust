@@ -52,20 +52,6 @@ impl App {
             grass_image.draw(&grass_texture, &ds, c.transform, gl);
 
             // Draw the level
-            let width = 500.0 / self.play.rays.len() as f64;
-            /*for i in 0..self.play.rays.len(){
-                if self.play.rays[i].collided{
-                    
-                    let h = App::calculate_box_height(&self.play.rays[i], self.play.view_direction);
-                    let view_dist = 1.0 - self.play.rays[i].length/200.0;
-                    let col: f32 = 1.0 * view_dist as f32;
-                    
-                    let colour = [col, col, col, 1.0];
-                    let rec = rectangle::rectangle_by_corners(i as f64 * width, 200.0 - h/2.0, i as f64 * width + width, 200.0 - h/2.0 + h);
-                    rectangle(colour, rec, c.transform, gl);
-                }
-            }*/
-
             let map_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 400.0));
             let map_img = App::create_texture(&self.play.rays, self.play.view_direction, &self.img);
             let map_texture: Texture = Texture::from_image(&map_img, &ts);
@@ -100,10 +86,9 @@ impl App {
         return 0.0;
     }
 
-    fn get_pixel(x: f32, y: f32, img: &DynamicImage) -> image::Rgba<u8>{
-        
-        let x_pos = img.dimensions().0 as f32 * x;
-        let y_pos = img.dimensions().1 as f32 * y;
+    fn get_pixel(x: f32, y: f32, img: &DynamicImage) -> image::Rgba<u8>{ 
+        let x_pos = img.dimensions().0 as f32 * x - 1.0;
+        let y_pos = img.dimensions().1 as f32 * y - 1.0;
         return img.get_pixel(x_pos as u32, y_pos as u32);
     }
 
@@ -116,7 +101,7 @@ impl App {
             let h: f64 = App::calculate_box_height(&rays[i], view_direction);
             let iter = i as f64;
             //let pixel = image::Rgba([(255.0 * view_dist) as u8, (255.0 * view_dist) as u8, (255.0 * view_dist) as u8, 255]);
-            let pixel = App::get_pixel(0.1, 0.1, tex);
+            let pixel = App::get_pixel(rays[i].wall_pos, 0.1, tex);
             for x in (iter * width) as u32..(iter * width+width) as u32{
                 for y in (200.0 - h/2.0) as u32..(200.0 - h/2.0 + h) as u32{
                     img.put_pixel(x, y, pixel)
@@ -132,12 +117,13 @@ impl App {
             self.play.rays[i].length = self.play.rays[i].calc_length();
             self.play.rays[i].collided = false;
             for cell in &self.map.cells{
-                for wall in cell.walls{
+                for mut wall in cell.walls{
                     let new_end = self.play.rays[i].find_intersection(wall.start, wall.end);
                     if new_end != (-1.0, -1.0) && (ray::Ray::calc_length_of_ray(self.play.rays[i].start, new_end) < self.play.rays[i].length){
                         self.play.rays[i].end = self.play.rays[i].find_intersection(wall.start, wall.end);
                         self.play.rays[i].length = self.play.rays[i].calc_length();
                         self.play.rays[i].collided = true;
+                        self.play.rays[i].wall_pos = wall.dist_along_wall(self.play.rays[i].end);
                     }
                 }
             }
