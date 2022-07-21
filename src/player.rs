@@ -35,7 +35,8 @@ impl Player {
     }
 
     pub fn gen_rays(&mut self){
-        let start: i32 = 0-(self.fov as i32/2);
+        
+        /*let start: i32 = 0-(self.fov as i32/2);
         for i in start..(self.fov/2) as i32{
             self.rays.push(ray::Ray {
                 start: self.pos,
@@ -45,6 +46,22 @@ impl Player {
                 length: 0.0,
                 collided: false
             },);
+        }*/
+
+        let ray_count = 160;
+        let start: i32 = 0-(self.fov as i32/2);
+        let increment: f64 = self.fov as f64 / ray_count as f64;
+        print!("increment {0}\n", increment);
+        for i in 0..ray_count{
+            self.rays.push(ray::Ray{
+                start: self.pos,
+                angle: start as f64 + (increment * i as f64) ,
+                max_length: 200.0,
+                end: (10.0, 10.0),
+                length: 0.0,
+                collided: false
+            },);
+            print!("angle: {0}", start as f64 + (increment * i as f64) );
         }
     }
 }

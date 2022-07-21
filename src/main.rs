@@ -13,6 +13,7 @@ use piston::{Button, PressEvent};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
+use image::{GenericImage, GenericImageView, ImageBuffer, RgbImage, Pixel, RgbaImage};
 
 pub mod ray;
 pub mod wall;
@@ -51,21 +52,23 @@ impl App {
 
             // Draw the level
             let width = 500.0 / self.play.rays.len() as f64;
-            for i in 0..self.play.rays.len(){
+            /*for i in 0..self.play.rays.len(){
                 if self.play.rays[i].collided{
+                    
+                    let h = App::calculate_box_height(&self.play.rays[i], self.play.view_direction);
                     let view_dist = 1.0 - self.play.rays[i].length/200.0;
                     let col: f32 = 1.0 * view_dist as f32;
-                    let a = (self.play.rays[i].angle - self.play.view_direction) * PI / 180.0;
-                    let z = self.play.rays[i].length * a.cos();
-                    let max = 400.0 * 20.0;
-                    let mut h = max / z;
-
-                    if h > max { h = max; }
+                    
                     let colour = [col, col, col, 1.0];
                     let rec = rectangle::rectangle_by_corners(i as f64 * width, 200.0 - h/2.0, i as f64 * width + width, 200.0 - h/2.0 + h);
                     rectangle(colour, rec, c.transform, gl);
                 }
-            }
+            }*/
+
+            let map_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 400.0));
+            let map_img = App::create_texture(&self.play.rays, self.play.view_direction);
+            let map_texture: Texture = Texture::from_image(&map_img, &ts);
+            map_image.draw(&map_texture, &ds, c.transform, gl);
 
             let debug: bool = true;
             // Debug drawing
@@ -83,9 +86,35 @@ impl App {
         });
     }
 
-    fn create_texture(distance: f64, texture: &graphics::Image, start: u32, end: u32) -> graphics::Image{
-        
-        return Image::new();
+    fn calculate_box_height(ray: &ray::Ray, view_direction: f64) -> f64{
+        if ray.collided{
+            let view_dist = 1.0 - ray.length/200.0;
+            let a = (ray.angle - view_direction) * PI / 180.0;
+            let z = ray.length * a.cos();
+            let max = 400.0 * 20.0;
+            let mut h = max / z;
+
+            if h > max { h = max; }
+            return h;
+        }
+        return 0.0;
+    }
+
+    fn create_texture(rays: &Vec<ray::Ray>, view_direction: f64) -> image::RgbaImage{
+        let mut img: RgbaImage = ImageBuffer::new(500, 400);
+        let width = 500.0 / rays.len() as f64;
+        // For each ray, draw a rectangle in the correct place in the image
+        for i in 0..rays.len(){
+            let h: f64 = App::calculate_box_height(&rays[i], view_direction);
+            let iter = i as f64;
+            let pixel = image::Rgba([255, 255 , 255, 255]);
+            for x in (iter * width) as u32..(iter * width+width) as u32{
+                for y in (200.0 - h/2.0) as u32..(200.0 - h/2.0 + h) as u32{
+                    img.put_pixel(x, y, pixel)
+                }
+            }
+        }
+        return img;
     }
 
     fn update(&mut self) {
