@@ -76,9 +76,9 @@ impl App {
             let a = (ray.angle - view_direction) * PI / 180.0;
             let z = ray.length * a.cos();
             let max = 400.0;
-            let mut h = max*1.0 / z;
+            let h = max / z;
 
-            if h > max { h = max; }
+            //if h > max { h = max; }
             return h;
         }
         return 0.0;
@@ -101,11 +101,13 @@ impl App {
         for i in 0..rays.len(){
             let view_dist = 1.0 - rays[i].length/10.0;
             let h: f64 = App::calculate_box_height(&rays[i], view_direction);
+            let mut dh = h;
+            if dh > height {dh = height;}
             let iter = i as f64;
 
             for x in (iter * width) as u32..(iter * width+width) as u32{
-                for y in (height/2.0 - h/2.0) as u32..(height/2.0 - h/2.0 + h) as u32 - 1{
-                    let mut pixel_y = (y as f64 - (height/2.0 - h/2.0)) as f32/ h as f32;
+                for y in (height/2.0 - dh/2.0) as u32..(height/2.0 - dh/2.0 + dh) as u32 - 1{
+                    let mut pixel_y = (y as f64 - (height/2.0 - h/2.0)) as f32 / h as f32;
                     if pixel_y >= 1.0 { pixel_y = 0.99; }
                     let mut pixel = App::get_pixel(rays[i].wall_pos, pixel_y, tex);
                     for i in 0..3{
@@ -183,7 +185,7 @@ fn main() {
         map: map::Map{
             cells: Vec::new()
         },
-        img: image::open("assets/test.jpg").unwrap(),
+        img: image::open("assets/brick2.jpg").unwrap(),
         sky: Texture::from_path(Path::new("assets/sky.png"), &TextureSettings::new()).unwrap(),
         grass: Texture::from_path(Path::new("assets/grass.png"), &TextureSettings::new()).unwrap(),
     };
