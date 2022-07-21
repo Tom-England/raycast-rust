@@ -41,18 +41,17 @@ impl App {
             clear(WHITE, gl);
 
             // Draw Skybox
-            
-            let sky_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 200.0));
+            let sky_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, args.window_size[0], args.window_size[1]));
 
-            let grass_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 200.0, 500.0, 400.0));
+            let grass_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, args.window_size[1] / 2.0, args.window_size[0], args.window_size[1]));
 
             let ds: DrawState = DrawState::default();
             sky_image.draw(&self.sky, &ds, c.transform, gl);
             grass_image.draw(&self.grass, &ds, c.transform, gl);
 
             // Draw the level
-            let map_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 400.0));
-            let map_img = App::create_texture(&self.play.rays, self.play.view_direction, &self.img);
+            let map_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, args.window_size[0], args.window_size[1]));
+            let map_img = App::create_texture(&self.play.rays, self.play.view_direction, &self.img, args.window_size[0], args.window_size[1]);
             let map_texture: Texture = Texture::from_image(&map_img, &TextureSettings::new());
             map_image.draw(&map_texture, &ds, c.transform, gl);
 
@@ -95,9 +94,9 @@ impl App {
         return img.get_pixel(x_pos, y_pos);
     }
 
-    fn create_texture(rays: &Vec<ray::Ray>, view_direction: f64, tex: &DynamicImage) -> image::RgbaImage{
-        let mut img: RgbaImage = ImageBuffer::new(500, 400);
-        let width = 500.0 / rays.len() as f64;
+    fn create_texture(rays: &Vec<ray::Ray>, view_direction: f64, tex: &DynamicImage, width: f64, height: f64) -> image::RgbaImage{
+        let mut img: RgbaImage = ImageBuffer::new(width as u32, height as u32);
+        let width = width / rays.len() as f64;
         // For each ray, draw a rectangle in the correct place in the image
         for i in 0..rays.len(){
             let view_dist = 1.0 - rays[i].length/200.0;
@@ -105,8 +104,8 @@ impl App {
             let iter = i as f64;
 
             for x in (iter * width) as u32..(iter * width+width) as u32{
-                for y in (200.0 - h/2.0) as u32..(200.0 - h/2.0 + h) as u32 - 1{
-                    let mut pixel_y = (y as f64 - (200.0 - h/2.0)) as f32/ h as f32;
+                for y in (height/2.0 - h/2.0) as u32..(height/2.0 - h/2.0 + h) as u32 - 1{
+                    let mut pixel_y = (y as f64 - (height/2.0 - h/2.0)) as f32/ h as f32;
                     if pixel_y >= 1.0 { pixel_y = 0.99; }
                     let mut pixel = App::get_pixel(rays[i].wall_pos, pixel_y, tex);
                     for i in 0..3{
