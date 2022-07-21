@@ -41,10 +41,10 @@ impl App {
             // Draw Skybox
             let ts: TextureSettings = TextureSettings::new();
             let sky_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 200.0));
-            let sky_texture: Texture = Texture::from_path(Path::new("/home/tom/sky.png"), &ts).unwrap();
+            let sky_texture: Texture = Texture::from_path(Path::new("assets/sky.png"), &ts).unwrap();
 
             let grass_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 200.0, 500.0, 400.0));
-            let grass_texture: Texture = Texture::from_path(Path::new("/home/tom/grass.png"), &ts).unwrap();
+            let grass_texture: Texture = Texture::from_path(Path::new("assets/grass.png"), &ts).unwrap();
 
             let ds: DrawState = DrawState::default();
             sky_image.draw(&sky_texture, &ds, c.transform, gl);
@@ -184,7 +184,7 @@ fn main() {
         map: map::Map{
             cells: Vec::new()
         },
-        img: image::open("/home/tom/projects/raycast-rust/assets/test.jpg").unwrap()
+        img: image::open("assets/test.jpg").unwrap()
     };
 
     // Add some rays
