@@ -1,7 +1,5 @@
 use std::f64::consts::PI;
 
-use image::ImageBuffer;
-
 use crate::ray;
 
 pub struct Player{

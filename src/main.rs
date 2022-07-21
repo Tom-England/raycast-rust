@@ -7,14 +7,12 @@ use std::f64::consts::PI;
 use std::path::Path;
 
 use glutin_window::GlutinWindow as Window;
-use graphics::Image;
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 use piston::{Button, PressEvent};
 use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
+use piston::input::{RenderArgs, RenderEvent, UpdateEvent};
 use piston::window::WindowSettings;
-use image::{GenericImage, GenericImageView, ImageBuffer, RgbImage, Pixel, RgbaImage, open, DynamicImage};
-use piston::input::Button::Keyboard;
+use image::{GenericImageView, ImageBuffer, RgbaImage, DynamicImage};
 
 pub mod ray;
 pub mod wall;
@@ -110,7 +108,11 @@ impl App {
                 for y in (200.0 - h/2.0) as u32..(200.0 - h/2.0 + h) as u32 - 1{
                     let mut pixel_y = (y as f64 - (200.0 - h/2.0)) as f32/ h as f32;
                     if pixel_y >= 1.0 { pixel_y = 0.99; }
-                    let pixel = App::get_pixel(rays[i].wall_pos, pixel_y, tex);
+                    let mut pixel = App::get_pixel(rays[i].wall_pos, pixel_y, tex);
+                    for i in 0..3{
+                        let new_colour = pixel[i] as f64 * view_dist;
+                        pixel[i] = new_colour as u8;
+                    }
                     img.put_pixel(x, y, pixel)
                 }
             }
@@ -210,7 +212,7 @@ fn main() {
             app.render(&args);
         }
 
-        if let Some(args) = e.update_args() {
+        if let Some(_args) = e.update_args() {
             app.update();
         }
 
