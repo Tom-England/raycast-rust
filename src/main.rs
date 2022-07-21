@@ -88,7 +88,6 @@ impl App {
 
     fn calculate_box_height(ray: &ray::Ray, view_direction: f64) -> f64{
         if ray.collided{
-            let view_dist = 1.0 - ray.length/200.0;
             let a = (ray.angle - view_direction) * PI / 180.0;
             let z = ray.length * a.cos();
             let max = 400.0 * 20.0;
@@ -105,9 +104,10 @@ impl App {
         let width = 500.0 / rays.len() as f64;
         // For each ray, draw a rectangle in the correct place in the image
         for i in 0..rays.len(){
+            let view_dist = 1.0 - rays[i].length/200.0;
             let h: f64 = App::calculate_box_height(&rays[i], view_direction);
             let iter = i as f64;
-            let pixel = image::Rgba([255, 255 , 255, 255]);
+            let pixel = image::Rgba([(255.0 * view_dist) as u8, (255.0 * view_dist) as u8, (255.0 * view_dist) as u8, 255]);
             for x in (iter * width) as u32..(iter * width+width) as u32{
                 for y in (200.0 - h/2.0) as u32..(200.0 - h/2.0 + h) as u32{
                     img.put_pixel(x, y, pixel)
