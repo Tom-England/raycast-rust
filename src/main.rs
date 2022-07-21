@@ -23,7 +23,9 @@ pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
     play: player::Player,
     map: map::Map,
-    img: DynamicImage
+    img: DynamicImage,
+    sky: Texture,
+    grass: Texture
 }
 
 impl App {
@@ -39,21 +41,19 @@ impl App {
             clear(WHITE, gl);
 
             // Draw Skybox
-            let ts: TextureSettings = TextureSettings::new();
+            
             let sky_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 200.0));
-            let sky_texture: Texture = Texture::from_path(Path::new("assets/sky.png"), &ts).unwrap();
 
             let grass_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 200.0, 500.0, 400.0));
-            let grass_texture: Texture = Texture::from_path(Path::new("assets/grass.png"), &ts).unwrap();
 
             let ds: DrawState = DrawState::default();
-            sky_image.draw(&sky_texture, &ds, c.transform, gl);
-            grass_image.draw(&grass_texture, &ds, c.transform, gl);
+            sky_image.draw(&self.sky, &ds, c.transform, gl);
+            grass_image.draw(&self.grass, &ds, c.transform, gl);
 
             // Draw the level
             let map_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 500.0, 400.0));
             let map_img = App::create_texture(&self.play.rays, self.play.view_direction, &self.img);
-            let map_texture: Texture = Texture::from_image(&map_img, &ts);
+            let map_texture: Texture = Texture::from_image(&map_img, &TextureSettings::new());
             map_image.draw(&map_texture, &ds, c.transform, gl);
 
             let debug: bool = true;
@@ -179,12 +179,14 @@ fn main() {
             view_direction: 0.0,
             pos: (100.0, 100.0),
             rays: Vec::new(),
-            fov: 80
+            fov: 80,
         },
         map: map::Map{
             cells: Vec::new()
         },
-        img: image::open("assets/test.jpg").unwrap()
+        img: image::open("assets/test.jpg").unwrap(),
+        sky: Texture::from_path(Path::new("assets/sky.png"), &TextureSettings::new()).unwrap(),
+        grass: Texture::from_path(Path::new("assets/grass.png"), &TextureSettings::new()).unwrap(),
     };
 
     // Add some rays
