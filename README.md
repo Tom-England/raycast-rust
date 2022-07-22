@@ -1,5 +1,7 @@
 # Rust Raycast Engine
 
+![Example](/img/example.png?raw=true "Example Screenshot")
+
 This project contains a Castle Wolfenstein inspired raycasting engine built in Rust with the Piston engine
 
 Cargo Run to start the project
