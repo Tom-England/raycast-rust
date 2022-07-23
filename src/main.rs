@@ -50,32 +50,8 @@ fn main() {
     app.play.gen_rays();
 
     // Add some walls
+    app.map.make_map();
 
-    let mut walls: Vec<map::Cell> = Vec::new();
-    walls.push(map::Cell{
-        walls: [wall::Wall::default(); 4],
-        pos: (0.0, 0.0),
-        l: 1.3
-    });
-    walls.push(map::Cell{
-        walls: [wall::Wall::default(); 4],
-        pos: (1.0, 0.0),
-        l: 1.3
-    });
-    walls.push(map::Cell{
-        walls: [wall::Wall::default(); 4],
-        pos: (2.0, 0.0),
-        l: 1.3
-    });
-    walls.push(map::Cell{
-        walls: [wall::Wall::default(); 4],
-        pos: (0.0, 1.0),
-        l: 1.3
-    });
-    for mut cell in walls {
-        cell.create_walls();
-        app.map.cells.push(cell);
-    }
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
