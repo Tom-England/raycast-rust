@@ -34,7 +34,7 @@ fn main() {
         gl: GlGraphics::new(opengl),
         play: player::Player{
             view_direction: 0.0,
-            pos: (3.0, 3.0),
+            pos: (3.0, 5.0),
             rays: Vec::new(),
             fov: 80
         },
@@ -62,8 +62,8 @@ fn main() {
             app.render(&args);
         }
 
-        if let Some(_args) = e.update_args() {
-            app.update();
+        if let Some(args) = e.update_args() {
+            app.update(&args);
         }
 
         if let Some(ref args) = e.press_args() {

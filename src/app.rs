@@ -1,5 +1,5 @@
 use opengl_graphics::{GlGraphics, Texture, TextureSettings};
-use piston::{Button};
+use piston::{Button, UpdateArgs};
 
 use piston::input::{RenderArgs};
 use image::{GenericImageView, ImageBuffer, RgbaImage, DynamicImage};
@@ -116,18 +116,18 @@ impl App {
         return img;
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, args: &UpdateArgs) {
         if self.turning_left {
-            self.play.turn(-2.0);
+            self.play.turn(-80.0, args.dt);
         }
         else if self.turning_right {
-            self.play.turn(2.0);
+            self.play.turn(80.0, args.dt);
         }
         if self.moving_forward {
-            self.play.advance(0.5);
+            self.play.advance(4.0, args.dt);
         }
         else if self.moving_back {
-            self.play.advance(-0.5);
+            self.play.advance(-4.0, args.dt);
         }
 
         for i in 0..self.play.rays.len(){

@@ -10,9 +10,9 @@ pub struct Player{
 }
 
 impl Player {
-    pub fn advance(&mut self, amount: f64) {
-        let x = amount * (self.view_direction * PI / 180.0).cos();
-        let y = amount * (self.view_direction * PI / 180.0).sin();
+    pub fn advance(&mut self, amount: f64, dt: f64) {
+        let x = amount * dt * (self.view_direction * PI / 180.0).cos();
+        let y = amount * dt * (self.view_direction * PI / 180.0).sin();
         self.pos.0 += x;
         self.pos.1 += y;
         for i in 0..self.rays.len(){
@@ -21,10 +21,10 @@ impl Player {
         }
     }
 
-    pub fn turn(&mut self, amount: f64) {
-        self.view_direction += amount;
+    pub fn turn(&mut self, amount: f64, dt: f64) {
+        self.view_direction += amount * dt;
         for i in 0..self.rays.len(){
-            self.rays[i].turn(amount);   
+            self.rays[i].turn(amount * dt);   
         }
         if self.view_direction > 360.0 {
             self.view_direction -= 360.0;
