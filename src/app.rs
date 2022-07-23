@@ -16,7 +16,11 @@ pub struct App {
     pub map: map::Map,
     pub img: DynamicImage,
     pub sky: Texture,
-    pub grass: Texture
+    pub grass: Texture,
+    pub turning_left: bool,
+    pub turning_right: bool,
+    pub moving_forward: bool,
+    pub moving_back: bool,
 }
 
 impl App {
@@ -113,6 +117,19 @@ impl App {
     }
 
     pub fn update(&mut self) {
+        if self.turning_left {
+            self.play.turn(-2.0);
+        }
+        else if self.turning_right {
+            self.play.turn(2.0);
+        }
+        if self.moving_forward {
+            self.play.advance(0.5);
+        }
+        else if self.moving_back {
+            self.play.advance(-0.5);
+        }
+
         for i in 0..self.play.rays.len(){
             self.play.rays[i].end = self.play.rays[i].calc_end();
             self.play.rays[i].length = self.play.rays[i].calc_length();
@@ -136,19 +153,43 @@ impl App {
 		use piston::Key;		
 		
         if *args == Keyboard(Key::Left) {
-            self.play.turn(-2.0);
+            self.turning_left = true;
+            self.turning_right = false;
         }
 
         if *args == Keyboard(Key::Right) {
-            self.play.turn(2.0);
+            self.turning_left = false;
+            self.turning_right = true;
         }
 
         if *args == Keyboard(Key::Up) {
-            self.play.advance(0.5);
+            self.moving_forward = true;
+            self.moving_back = false;
         }
 
         if *args == Keyboard(Key::Down) {
-            self.play.advance(-0.5);
+            self.moving_forward = false;
+            self.moving_back = true;
+        }
+    }
+    pub fn key_up(&mut self, args: &Button) {
+		use piston::Button::Keyboard;
+		use piston::Key;		
+		
+        if *args == Keyboard(Key::Left) {
+            self.turning_left = false;
+        }
+
+        if *args == Keyboard(Key::Right) {
+            self.turning_right = false;
+        }
+
+        if *args == Keyboard(Key::Up) {
+            self.moving_forward = false;
+        }
+
+        if *args == Keyboard(Key::Down) {
+            self.moving_back = false;
         }
     }
 }

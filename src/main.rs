@@ -8,7 +8,7 @@ use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics, Texture, TextureSettings};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderEvent, UpdateEvent};
-use piston::PressEvent;
+use piston::{PressEvent, ReleaseEvent};
 
 use std::path::Path;
 
@@ -36,7 +36,7 @@ fn main() {
             view_direction: 0.0,
             pos: (3.0, 3.0),
             rays: Vec::new(),
-            fov: 80,
+            fov: 80
         },
         map: map::Map{
             cells: Vec::new()
@@ -44,6 +44,10 @@ fn main() {
         img: image::open("assets/brick2.jpg").unwrap(),
         sky: Texture::from_path(Path::new("assets/sky.png"), &TextureSettings::new()).unwrap(),
         grass: Texture::from_path(Path::new("assets/grass.png"), &TextureSettings::new()).unwrap(),
+        turning_left: false,
+        turning_right: false,
+        moving_forward: false,
+        moving_back: false
     };
 
     // Add some rays
@@ -64,6 +68,10 @@ fn main() {
 
         if let Some(ref args) = e.press_args() {
             app.key_press(args);
+        }
+
+        if let Some(ref args) = e.release_args() {
+            app.key_up(args);
         }
     }
 }
