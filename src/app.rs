@@ -94,7 +94,7 @@ impl App {
         let width = width / rays.len() as f64;
         // For each ray, draw a rectangle in the correct place in the image
         for i in 0..rays.len(){
-            let view_dist = 1.0 - rays[i].length/10.0;
+            let view_dist = 1.0 - rays[i].length/rays[i].max_length;
             let h: f64 = App::calculate_box_height(&rays[i], view_direction);
             let mut dh = h;
             if dh > height {dh = height;}
