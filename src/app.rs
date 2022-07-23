@@ -50,11 +50,11 @@ impl App {
             // Debug drawing
             if debug{
                 for ray in &self.play.rays{
-                    line(RED, 1.0, [ray.start.0, ray.start.1, ray.end.0, ray.end.1], c.transform, gl);
+                    line(RED, 1.0, [ray.start.0 * 10.0, ray.start.1 * 10.0, ray.end.0 * 10.0, ray.end.1 * 10.0], c.transform, gl);
                 }
                 for cell in &self.map.cells{
                     for wall in &cell.walls{
-                        line(GREEN, 1.0, [wall.start.0, wall.start.1, wall.end.0, wall.end.1], c.transform, gl);
+                        line(GREEN, 1.0, [wall.start.0 * 10.0, wall.start.1 * 10.0, wall.end.0 * 10.0, wall.end.1 * 10.0], c.transform, gl);
                     }
                 }
             }
