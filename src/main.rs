@@ -11,6 +11,7 @@ use piston::input::{RenderEvent, UpdateEvent};
 use piston::{PressEvent, ReleaseEvent};
 
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub mod app;
 pub mod ray;
@@ -47,7 +48,10 @@ fn main() {
         turning_left: false,
         turning_right: false,
         moving_forward: false,
-        moving_back: false
+        moving_back: false,
+        debug: true,
+        last_time_step: SystemTime::now().duration_since(UNIX_EPOCH).unwrap(),
+        dt: 0.0
     };
 
     // Add some rays
@@ -62,8 +66,8 @@ fn main() {
             app.render(&args);
         }
 
-        if let Some(args) = e.update_args() {
-            app.update(&args);
+        if let Some(_args) = e.update_args() {
+            app.update();
         }
 
         if let Some(ref args) = e.press_args() {

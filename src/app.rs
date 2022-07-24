@@ -1,10 +1,11 @@
 use opengl_graphics::{GlGraphics, Texture, TextureSettings};
-use piston::{Button, UpdateArgs};
+use piston::{Button, UpdateArgs, RenderEvent, UpdateEvent};
 
 use piston::input::{RenderArgs};
 use image::{GenericImageView, ImageBuffer, RgbaImage, DynamicImage};
 
 use std::f64::consts::PI;
+use std::time::{SystemTime, Duration, UNIX_EPOCH};
 
 use crate::player;
 use crate::map;
@@ -21,6 +22,9 @@ pub struct App {
     pub turning_right: bool,
     pub moving_forward: bool,
     pub moving_back: bool,
+    pub debug: bool,
+    pub last_time_step: Duration,
+    pub dt: f64
 }
 
 impl App {
@@ -50,9 +54,8 @@ impl App {
             let map_texture: Texture = Texture::from_image(&map_img, &TextureSettings::new());
             map_image.draw(&map_texture, &ds, c.transform, gl);
 
-            let debug: bool = true;
             // Debug drawing
-            if debug{
+            if self.debug{        
                 for ray in &self.play.rays{
                     line(RED, 1.0, [ray.start.0 * 10.0, ray.start.1 * 10.0, ray.end.0 * 10.0, ray.end.1 * 10.0], c.transform, gl);
                 }
@@ -61,6 +64,7 @@ impl App {
                         line(GREEN, 1.0, [wall.start.0 * 10.0, wall.start.1 * 10.0, wall.end.0 * 10.0, wall.end.1 * 10.0], c.transform, gl);
                     }
                 }
+                
             }
 
         });
@@ -116,18 +120,22 @@ impl App {
         return img;
     }
 
-    pub fn update(&mut self, args: &UpdateArgs) {
+    pub fn update(&mut self) {
+
+        self.dt = (SystemTime::now().duration_since(UNIX_EPOCH).unwrap() - self.last_time_step).as_secs_f64();
+        self.last_time_step = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+
         if self.turning_left {
-            self.play.turn(-80.0, args.dt);
+            self.play.turn(-80.0, self.dt);
         }
         else if self.turning_right {
-            self.play.turn(80.0, args.dt);
+            self.play.turn(80.0, self.dt);
         }
         if self.moving_forward {
-            self.play.advance(4.0, args.dt);
+            self.play.advance(4.0, self.dt);
         }
         else if self.moving_back {
-            self.play.advance(-4.0, args.dt);
+            self.play.advance(-4.0, self.dt);
         }
 
         for i in 0..self.play.rays.len(){
