@@ -56,6 +56,8 @@ impl App {
 
             // Debug drawing
             if self.debug{        
+
+                println!("fps: {0}", 1.0/self.dt);
                 for ray in &self.play.rays{
                     line(RED, 1.0, [ray.start.0 * 10.0, ray.start.1 * 10.0, ray.end.0 * 10.0, ray.end.1 * 10.0], c.transform, gl);
                 }
