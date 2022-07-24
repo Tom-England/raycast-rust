@@ -1,8 +1,8 @@
 use opengl_graphics::{GlGraphics, Texture, TextureSettings};
-use piston::{Button, UpdateArgs, RenderEvent, UpdateEvent};
+use piston::{Button};
 
 use piston::input::{RenderArgs};
-use image::{GenericImageView, ImageBuffer, RgbaImage, DynamicImage};
+use image::{ImageBuffer, RgbaImage};
 
 use std::f64::consts::PI;
 use std::time::{SystemTime, Duration, UNIX_EPOCH};
@@ -86,8 +86,8 @@ impl App {
     }
 
     fn get_pixel(x: f32, y: f32, img: &[[image::Rgba<u8>; 512]; 512]) -> image::Rgba<u8>{ 
-        let mut x_pos = (img.len() as f32 * x) as u32;
-        let mut y_pos = (img[0].len() as f32 * y) as u32;
+        let x_pos = (img.len() as f32 * x) as u32;
+        let y_pos = (img[0].len() as f32 * y) as u32;
 
         return img[x_pos as usize][y_pos as usize];
     }
