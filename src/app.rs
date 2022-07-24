@@ -15,7 +15,7 @@ pub struct App {
     pub gl: GlGraphics, // OpenGL drawing backend.
     pub play: player::Player,
     pub map: map::Map,
-    pub img: DynamicImage,
+    pub img: [[image::Rgba<u8>; 512]; 512],
     pub sky: Texture,
     pub grass: Texture,
     pub turning_left: bool,
@@ -85,17 +85,14 @@ impl App {
         return 0.0;
     }
 
-    fn get_pixel(x: f32, y: f32, img: &DynamicImage) -> image::Rgba<u8>{ 
-        let mut x_pos = (img.dimensions().0 as f32 * x) as u32;
-        let mut y_pos = (img.dimensions().1 as f32 * y) as u32;
+    fn get_pixel(x: f32, y: f32, img: &[[image::Rgba<u8>; 512]; 512]) -> image::Rgba<u8>{ 
+        let mut x_pos = (img.len() as f32 * x) as u32;
+        let mut y_pos = (img[0].len() as f32 * y) as u32;
 
-        if x_pos >= img.dimensions().0 {x_pos = img.dimensions().0 - 1};
-        if y_pos >= img.dimensions().1 {y_pos = img.dimensions().1 - 1};
-
-        return img.get_pixel(x_pos, y_pos);
+        return img[x_pos as usize][y_pos as usize];
     }
 
-    fn create_texture(rays: &Vec<ray::Ray>, view_direction: f64, tex: &DynamicImage, width: f64, height: f64) -> image::RgbaImage{
+    fn create_texture(rays: &Vec<ray::Ray>, view_direction: f64, tex: &[[image::Rgba<u8>; 512]; 512], width: f64, height: f64) -> image::RgbaImage{
         let mut img: RgbaImage = ImageBuffer::new(width as u32, height as u32);
         let width = width / rays.len() as f64;
         // For each ray, draw a rectangle in the correct place in the image

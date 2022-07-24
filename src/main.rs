@@ -4,6 +4,7 @@ extern crate opengl_graphics;
 extern crate piston;
 
 use glutin_window::GlutinWindow as Window;
+use image::GenericImageView;
 use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics, Texture, TextureSettings};
 use piston::event_loop::{EventSettings, Events};
@@ -30,6 +31,17 @@ fn main() {
         .build()
         .unwrap();
 
+    // Load brick texture and convert to an array
+    let brick_dyn_image = image::open("assets/brick2.jpg").unwrap();
+    let mut brick_arr: [[image::Rgba<u8>; 512]; 512] = [[image::Rgba([0,0,0,0]); 512]; 512];
+    for i in 0..512{
+        for j in 0..512{
+            let pixel = brick_dyn_image.get_pixel(i, j);
+            brick_arr[i as usize][j as usize] = pixel;
+        }
+    }
+
+
     // Create a new game and run it.
     let mut app = app::App {
         gl: GlGraphics::new(opengl),
@@ -42,7 +54,7 @@ fn main() {
         map: map::Map{
             cells: Vec::new()
         },
-        img: image::open("assets/brick2.jpg").unwrap(),
+        img: brick_arr,
         sky: Texture::from_path(Path::new("assets/sky.png"), &TextureSettings::new()).unwrap(),
         grass: Texture::from_path(Path::new("assets/grass.png"), &TextureSettings::new()).unwrap(),
         turning_left: false,
