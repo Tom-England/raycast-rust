@@ -17,7 +17,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub mod app;
 pub mod ray;
-pub mod wall;
 pub mod player;
 pub mod map;
 
@@ -26,7 +25,7 @@ fn main() {
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window.
-    let mut window: Window = WindowSettings::new("raycast", [300, 280])
+    let mut window: Window = WindowSettings::new("raycast", [400, 280])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
@@ -47,13 +46,25 @@ fn main() {
     let mut app = app::App {
         gl: GlGraphics::new(opengl),
         play: player::Player{
-            view_direction: 0.0,
+            plane: (0.0, 0.66),
+            dir: (-1.0, 0.0),
             pos: (3.0, 5.0),
             rays: Vec::new(),
-            fov: 80
         },
         map: map::Map{
-            cells: Vec::new()
+            map_dim: (10, 10),
+            cell_arr: [
+                [1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,1],
+                [1,0,1,0,1,0,0,1,0,1],
+                [1,0,0,0,1,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1]
+            ]
         },
         img: brick_arr,
         sky: Texture::from_path(Path::new("assets/sky.png"), &TextureSettings::new()).unwrap(),
@@ -65,16 +76,10 @@ fn main() {
         debug: true,
         last_time_step: SystemTime::now().duration_since(UNIX_EPOCH).unwrap(),
         dt: 0.0,
-        map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 300.0, 280.0)),
-        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 300.0, 140.0)),
-        grass_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 140.0, 300.0, 280.0)),
+        map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 400.0, 280.0)),
+        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 400.0, 140.0)),
+        grass_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 140.0, 400.0, 280.0)),
     };
-
-    // Add some rays
-    app.play.gen_rays();
-
-    // Add some walls
-    app.map.make_map();
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
