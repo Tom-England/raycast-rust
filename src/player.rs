@@ -48,7 +48,7 @@ impl Player {
             },);
         }*/
 
-        let ray_count = 400;
+        let ray_count = 300;
         let start: i32 = 0-(self.fov as i32/2);
         let increment: f64 = self.fov as f64 / ray_count as f64;
         //print!("increment {0}\n", increment);

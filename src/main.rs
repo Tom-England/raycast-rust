@@ -4,6 +4,7 @@ extern crate opengl_graphics;
 extern crate piston;
 
 use glutin_window::GlutinWindow as Window;
+use graphics::{Image, rectangle};
 use image::GenericImageView;
 use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics, Texture, TextureSettings};
@@ -25,7 +26,7 @@ fn main() {
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window.
-    let mut window: Window = WindowSettings::new("raycast", [500, 400])
+    let mut window: Window = WindowSettings::new("raycast", [300, 280])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
@@ -63,7 +64,10 @@ fn main() {
         moving_back: false,
         debug: true,
         last_time_step: SystemTime::now().duration_since(UNIX_EPOCH).unwrap(),
-        dt: 0.0
+        dt: 0.0,
+        map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 300.0, 280.0)),
+        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 300.0, 140.0)),
+        grass_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 140.0, 300.0, 280.0)),
     };
 
     // Add some rays

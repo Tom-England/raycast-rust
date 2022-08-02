@@ -1,3 +1,4 @@
+use graphics::Image;
 use opengl_graphics::{GlGraphics, Texture, TextureSettings};
 use piston::{Button};
 
@@ -24,7 +25,10 @@ pub struct App {
     pub moving_back: bool,
     pub debug: bool,
     pub last_time_step: Duration,
-    pub dt: f64
+    pub dt: f64,
+    pub map_image: Image,
+    pub sky_image: Image,
+    pub grass_image: Image
 }
 
 impl App {
@@ -40,23 +44,22 @@ impl App {
             clear(WHITE, gl);
 
             // Draw Skybox
-            let sky_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, args.window_size[0], args.window_size[1]));
-
-            let grass_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, args.window_size[1] / 2.0, args.window_size[0], args.window_size[1]));
 
             let ds: DrawState = DrawState::default();
-            sky_image.draw(&self.sky, &ds, c.transform, gl);
-            grass_image.draw(&self.grass, &ds, c.transform, gl);
+            self.sky_image.draw(&self.sky, &ds, c.transform, gl);
+            self.grass_image.draw(&self.grass, &ds, c.transform, gl);
 
+            
             // Draw the level
-            let map_image: Image = Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, args.window_size[0], args.window_size[1]));
+            let t1 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
             let map_img = App::create_texture(&self.play.rays, self.play.view_direction, &self.img, args.window_size[0], args.window_size[1]);
             let map_texture: Texture = Texture::from_image(&map_img, &TextureSettings::new());
-            map_image.draw(&map_texture, &ds, c.transform, gl);
-
+            self.map_image.draw(&map_texture, &ds, c.transform, gl);
+            let t2 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+            println!("Drawing frame took {0} seconds", (t2 - t1).as_secs_f64());
             // Debug drawing
             if self.debug{        
-
+                //println!("Total frame took {0} seconds", self.dt);
                 println!("fps: {0}", 1.0/self.dt);
                 for ray in &self.play.rays{
                     line(RED, 1.0, [ray.start.0 * 10.0, ray.start.1 * 10.0, ray.end.0 * 10.0, ray.end.1 * 10.0], c.transform, gl);
@@ -76,7 +79,7 @@ impl App {
         if ray.collided{
             let a = (ray.angle - view_direction) * PI / 180.0;
             let z = ray.length * a.cos();
-            let max = 400.0;
+            let max = 280.0;
             let h = max / z;
 
             //if h > max { h = max; }
@@ -93,6 +96,7 @@ impl App {
     }
 
     fn create_texture(rays: &Vec<ray::Ray>, view_direction: f64, tex: &[[image::Rgba<u8>; 512]; 512], width: f64, height: f64) -> image::RgbaImage{
+        
         let mut img: RgbaImage = ImageBuffer::new(width as u32, height as u32);
         let width = width / rays.len() as f64;
         // For each ray, draw a rectangle in the correct place in the image
@@ -102,20 +106,24 @@ impl App {
             let mut dh = h;
             if dh > height {dh = height;}
             let iter = i as f64;
+            
 
             for x in (iter * width) as u32..(iter * width+width) as u32{
                 for y in (height/2.0 - dh/2.0) as u32..(height/2.0 - dh/2.0 + dh) as u32 - 1{
-                    let mut pixel_y = (y as f64 - (height/2.0 - h/2.0)) as f32 / h as f32;
-                    if pixel_y >= 1.0 { pixel_y = 0.99; }
+                    let pixel_y = (y as f64 - (height/2.0 - h/2.0)) as f32 / h as f32;
+                    //if pixel_y >= 1.0 { pixel_y = 0.99; }
                     let mut pixel = App::get_pixel(rays[i].wall_pos, pixel_y, tex);
                     for i in 0..3{
                         let new_colour = pixel[i] as f64 * view_dist;
                         pixel[i] = new_colour as u8;
                     }
-                    img.put_pixel(x, y, pixel)
+                    img.put_pixel(x, y, pixel);
+                    
                 }
             }
+            
         }
+        
         return img;
     }
 
@@ -145,7 +153,7 @@ impl App {
                 for mut wall in cell.walls{
                     let new_end = self.play.rays[i].find_intersection(wall.start, wall.end);
                     if new_end != (-1.0, -1.0) && (ray::Ray::calc_length_of_ray(self.play.rays[i].start, new_end) < self.play.rays[i].length){
-                        self.play.rays[i].end = self.play.rays[i].find_intersection(wall.start, wall.end);
+                        self.play.rays[i].end = new_end;
                         self.play.rays[i].length = self.play.rays[i].calc_length();
                         self.play.rays[i].collided = true;
                         self.play.rays[i].wall_pos = wall.dist_along_wall(self.play.rays[i].end);
