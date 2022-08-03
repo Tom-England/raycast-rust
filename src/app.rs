@@ -53,7 +53,6 @@ impl App {
 
             // Debug
             if self.debug{        
-                //println!("Total frame took {0} seconds", self.dt);
                 println!("fps: {0}", 1.0/self.dt);
             }
 
@@ -71,32 +70,23 @@ impl App {
         
         let mut img: RgbaImage = ImageBuffer::new(width as u32, height as u32);
         let width = width / rays.len() as f64;
-        //println!("Ray width: {0}", width);
-        // For each ray, draw a rectangle in the correct place in the image
         let max_len = 10.0;
         for i in 0..rays.len(){
             let view_dist = 1.0 - rays[i].length/max_len;
-            //let angle = view_direction - rays.len() as f64 / 2.0 + i as f64;
             let h: f64 = 280.0 / rays[i].length;
             let mut dh = h;
             if dh > height {dh = height;}
             let iter = i as f64;
             
-            //println!("dh: {0}", dh);
-
             for x in (iter * width) as u32..(iter * width+width) as u32{
                 for y in (height/2.0 - dh/2.0) as u32..(height/2.0 - dh/2.0 + dh) as u32 - 1{
                     let pixel_y = (y as f64 - (height/2.0 - h/2.0)) / h;
-                    //if pixel_y >= 1.0 { pixel_y = 0.99; }
                     let index: usize = (rays[i].texture_index - 1) as usize;
                     let mut pixel = App::get_pixel(rays[i].texture_pos, pixel_y, &tex[index]);
-                    //println!("Pixel [{0},{1},{2}]", pixel[0], pixel[1], pixel[2]);
-                    //let pixel = image::Rgba([255,255,255,255]);
                     for i in 0..3{
                         let new_colour = pixel[i] as f64 * view_dist;
                         pixel[i] = new_colour as u8;
                     }
-                    //println!("Putting pixel at {0}, {1}", x, y);
                     img.put_pixel(x, y, pixel);
                     
                 }
@@ -124,23 +114,6 @@ impl App {
         else if self.moving_back {
             self.play.advance(0.05, -1.0, self.dt, &self.map.cell_arr);
         }
-
-        /*for i in 0..self.play.rays.len(){
-            self.play.rays[i].end = self.play.rays[i].calc_end();
-            self.play.rays[i].length = self.play.rays[i].calc_length();
-            self.play.rays[i].collided = false;
-            for cell in &self.map.cells{
-                for mut wall in cell.walls{
-                    let new_end = self.play.rays[i].find_intersection(wall.start, wall.end);
-                    if new_end != (-1.0, -1.0) && (ray::Ray::calc_length_of_ray(self.play.rays[i].start, new_end) < self.play.rays[i].length){
-                        self.play.rays[i].end = new_end;
-                        self.play.rays[i].length = self.play.rays[i].calc_length();
-                        self.play.rays[i].collided = true;
-                        self.play.rays[i].wall_pos = wall.dist_along_wall(self.play.rays[i].end);
-                    }
-                }
-            }
-        }*/
         self.find_ray_intersections();
     }
 
