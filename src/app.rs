@@ -52,8 +52,8 @@ impl App {
             line(GREEN, 1.0, [0.0, 0.0, 0.0, 0.0], c.transform, gl);
 
             // Debug
-            if self.debug{        
-                println!("fps: {0}", 1.0/self.dt);
+            if self.debug{       
+                print!("\rfps: {:05.0}", (1.0/self.dt).floor());
             }
 
         });
@@ -93,7 +93,6 @@ impl App {
             }
             
         }
-        println!();
         return img;
     }
 
@@ -118,7 +117,7 @@ impl App {
     }
 
     fn find_ray_intersections(&mut self){
-        let rc: i32 = 80;
+        let rc: i32 = 600;
         let (plane_x, plane_y): (f64, f64) = self.play.plane;
         let (dir_x, dir_y): (f64, f64) = self.play.dir;
         let (pos_x, pos_y) = self.play.pos;
