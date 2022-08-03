@@ -2,12 +2,11 @@
 
 ![Example](/img/example.png?raw=true "Example Screenshot")
 
-This project contains a Castle Wolfenstein inspired raycasting engine built in Rust with the Piston engine
+This project contains a Wolfenstein 3D inspired raycasting engine built in Rust with the Piston engine
 
 Cargo Run to start the project
 
 ## Todo
-* Multiple texture options for walls
 * Sprites
 * Directional Shadows
 
