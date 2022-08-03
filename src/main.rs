@@ -20,12 +20,15 @@ pub mod ray;
 pub mod player;
 pub mod map;
 
+const X: f64 = 400.0;
+const Y: f64 = 280.0;
+
 fn main() {
     // Change this to OpenGL::V2_1 if not working.
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window.
-    let mut window: Window = WindowSettings::new("raycast", [400, 280])
+    let mut window: Window = WindowSettings::new("raycast", [X, Y])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
@@ -84,8 +87,8 @@ fn main() {
         debug: true,
         last_time_step: SystemTime::now().duration_since(UNIX_EPOCH).unwrap(),
         dt: 0.0,
-        map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 400.0, 280.0)),
-        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 400.0, 140.0))
+        map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, X, Y)),
+        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, X, Y/2.0))
     };
 
     let mut events = Events::new(EventSettings::new());
