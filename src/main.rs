@@ -31,16 +31,25 @@ fn main() {
         .build()
         .unwrap();
 
-    // Load brick texture and convert to an array
-    let brick_dyn_image = image::open("assets/brick2.jpg").unwrap();
-    let mut brick_arr: [[image::Rgba<u8>; 512]; 512] = [[image::Rgba([0,0,0,0]); 512]; 512];
-    for i in 0..512{
-        for j in 0..512{
-            let pixel = brick_dyn_image.get_pixel(i, j);
-            brick_arr[i as usize][j as usize] = pixel;
+
+    let mut texture_atlas: Vec<[[image::Rgba<u8>; 256]; 256]> = Vec::new();
+
+    fn new_texture(path: String) -> [[image::Rgba<u8>; 256]; 256] {
+        let mut arr: [[image::Rgba<u8>; 256]; 256] = [[image::Rgba([0,0,0,0]); 256]; 256];
+        let image = image::open(path).unwrap();
+        for i in 0..256{
+            for j in 0..256{
+                let pixel = image.get_pixel(i, j);
+                arr[i as usize][j as usize] = pixel;
+            }
         }
+        return arr;
     }
 
+    // Load Textures
+    texture_atlas.push(new_texture("assets/brick2.jpg".to_string()));
+    texture_atlas.push(new_texture("assets/wood.jpg".to_string()));
+    texture_atlas.push(new_texture("assets/metal.jpg".to_string()));
 
     // Create a new game and run it.
     let mut app = app::App {
@@ -55,20 +64,19 @@ fn main() {
             map_dim: (10, 10),
             cell_arr: [
                 [1,1,1,1,1,1,1,1,1,1],
+                [1,0,2,2,2,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
-                [1,0,0,0,0,0,0,0,0,1],
-                [1,0,1,0,1,0,0,1,0,1],
-                [1,0,0,0,1,0,0,0,0,1],
-                [1,1,1,1,1,1,1,1,1,1]
+                [1,0,1,0,3,0,0,3,0,1],
+                [1,0,0,0,3,0,0,3,0,1],
+                [1,1,1,1,3,3,3,3,1,1]
             ]
         },
-        img: brick_arr,
+        texture_atlas: texture_atlas,
         sky: Texture::from_path(Path::new("assets/sky.png"), &TextureSettings::new()).unwrap(),
-        grass: Texture::from_path(Path::new("assets/grass.png"), &TextureSettings::new()).unwrap(),
         turning_left: false,
         turning_right: false,
         moving_forward: false,
@@ -77,8 +85,7 @@ fn main() {
         last_time_step: SystemTime::now().duration_since(UNIX_EPOCH).unwrap(),
         dt: 0.0,
         map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 400.0, 280.0)),
-        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 400.0, 140.0)),
-        grass_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 140.0, 400.0, 280.0)),
+        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, 400.0, 140.0))
     };
 
     let mut events = Events::new(EventSettings::new());

@@ -15,9 +15,8 @@ pub struct App {
     pub gl: GlGraphics, // OpenGL drawing backend.
     pub play: player::Player,
     pub map: map::Map,
-    pub img: [[image::Rgba<u8>; 512]; 512],
+    pub texture_atlas: Vec<[[image::Rgba<u8>; 256]; 256]>,
     pub sky: Texture,
-    pub grass: Texture,
     pub turning_left: bool,
     pub turning_right: bool,
     pub moving_forward: bool,
@@ -27,27 +26,25 @@ pub struct App {
     pub dt: f64,
     pub map_image: Image,
     pub sky_image: Image,
-    pub grass_image: Image
 }
 
 impl App {
     pub fn render(&mut self, args: &RenderArgs) {
         use graphics::*;
 
-        const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
+        const GREY: [f32; 4] = [0.2,0.2,0.2, 1.0];
         const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
-            clear(WHITE, gl);
+            clear(GREY, gl);
             
             // Draw Skybox
             let ds: DrawState = DrawState::default();
             self.sky_image.draw(&self.sky, &ds, c.transform, gl);
-            self.grass_image.draw(&self.grass, &ds, c.transform, gl);
 
             // Draw the level
-            let map_img = App::create_texture(&self.play.rays, &self.img, args.window_size[0], args.window_size[1]);
+            let map_img = App::create_texture(&self.play.rays, &self.texture_atlas, args.window_size[0], args.window_size[1]);
             let map_texture: Texture = Texture::from_image(&map_img, &TextureSettings::new());
             self.map_image.draw(&map_texture, &ds, c.transform, gl);
 
@@ -63,14 +60,14 @@ impl App {
         });
     }
 
-    fn get_pixel(x: f64, y: f64, img: &[[image::Rgba<u8>; 512]; 512]) -> image::Rgba<u8>{ 
+    fn get_pixel(x: f64, y: f64, img: &[[image::Rgba<u8>; 256]; 256]) -> image::Rgba<u8>{ 
         let x_pos = (img.len() as f64 * x) as usize;
         let y_pos = (img[0].len() as f64 * y) as usize;
 
         return img[x_pos][y_pos];
     }
 
-    fn create_texture(rays: &Vec<ray::Ray>, tex: &[[image::Rgba<u8>; 512]; 512], width: f64, height: f64) -> image::RgbaImage{
+    fn create_texture(rays: &Vec<ray::Ray>, tex: &Vec<[[image::Rgba<u8>; 256]; 256]>, width: f64, height: f64) -> image::RgbaImage{
         
         let mut img: RgbaImage = ImageBuffer::new(width as u32, height as u32);
         let width = width / rays.len() as f64;
@@ -91,7 +88,8 @@ impl App {
                 for y in (height/2.0 - dh/2.0) as u32..(height/2.0 - dh/2.0 + dh) as u32 - 1{
                     let pixel_y = (y as f64 - (height/2.0 - h/2.0)) / h;
                     //if pixel_y >= 1.0 { pixel_y = 0.99; }
-                    let mut pixel = App::get_pixel(rays[i].texture_pos, pixel_y, tex);
+                    let index: usize = (rays[i].texture_index - 1) as usize;
+                    let mut pixel = App::get_pixel(rays[i].texture_pos, pixel_y, &tex[index]);
                     //println!("Pixel [{0},{1},{2}]", pixel[0], pixel[1], pixel[2]);
                     //let pixel = image::Rgba([255,255,255,255]);
                     for i in 0..3{
