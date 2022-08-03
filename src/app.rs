@@ -59,11 +59,11 @@ impl App {
         });
     }
 
-    fn get_pixel(x: f64, y: f64, img: &[[image::Rgba<u8>; 256]; 256]) -> image::Rgba<u8>{ 
-        let x_pos = (img.len() as f64 * x) as usize;
+    fn get_pixel(x: i32, y: f64, img: &[[image::Rgba<u8>; 256]; 256]) -> image::Rgba<u8>{ 
+        //let x_pos = (img.len() as f64 * x) as usize;
         let y_pos = (img[0].len() as f64 * y) as usize;
 
-        return img[x_pos][y_pos];
+        return img[x as usize][y_pos];
     }
 
     fn create_texture(rays: &Vec<ray::Ray>, tex: &Vec<[[image::Rgba<u8>; 256]; 256]>, width: f64, height: f64) -> image::RgbaImage{
@@ -170,7 +170,7 @@ impl App {
             let mut ray = ray::Ray{
                 length: 0.0,
                 texture_index: 0,
-                texture_pos: 0.0
+                texture_pos: 0
             };
 
             //perform DDA
@@ -179,16 +179,16 @@ impl App {
                 //jump to next map square, either in x-direction, or in y-direction
                 if side_dist_x < side_dist_y
                 {
-                side_dist_x += delta_dist_x;
-                map_x += step_x;
-                side = 0;
+                    side_dist_x += delta_dist_x;
+                    map_x += step_x;
+                    side = 0;
                 }
                 else
                 {
-                side_dist_y += delta_dist_y;
-                //println!("{0} + {1}", map_y, step_y);
-                map_y += step_y;
-                side = 1;
+                    side_dist_y += delta_dist_y;
+                    //println!("{0} + {1}", map_y, step_y);
+                    map_y += step_y;
+                    side = 1;
                 }
                 //Check if ray has hit a wall
                 let ti: u8;
@@ -206,16 +206,16 @@ impl App {
             //calculate value of wallX
             let mut wall_x: f64; //where exactly the wall was hit
             if side == 0 { wall_x = pos_y + perp_wall_dist * ray_dir_y; }
-            else { wall_x = pos_y + perp_wall_dist * ray_dir_x; }
+            else { wall_x = pos_x + perp_wall_dist * ray_dir_x; }
             wall_x -= wall_x.floor();
 
             //x coordinate on the texture
-            /*int texX = int(wallX * double(texWidth));
-            if(side == 0 && rayDirX > 0) texX = texWidth - texX - 1;
-            if(side == 1 && rayDirY < 0) texX = texWidth - texX - 1;*/
+            let mut tex_x = (wall_x * 256.0).floor() as i32;
+            if side == 0 && ray_dir_x > 0.0 { tex_x = 256 - tex_x - 1; }
+            if side == 1 && ray_dir_y < 0.0 { tex_x = 256 - tex_x - 1; }
 
             ray.length = perp_wall_dist;
-            ray.texture_pos = wall_x;
+            ray.texture_pos = tex_x;
 
             self.play.rays.push(ray);
         }
