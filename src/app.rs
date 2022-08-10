@@ -3,11 +3,11 @@ use opengl_graphics::{GlGraphics, Texture, TextureSettings};
 use piston::{Button};
 
 use piston::input::{RenderArgs};
-use image::{ImageBuffer, RgbaImage, GenericImageView};
+use image::{ImageBuffer, RgbaImage};
 
 use std::time::{SystemTime, Duration, UNIX_EPOCH};
 
-use crate::player;
+use crate::{player, global};
 use crate::map;
 use crate::ray;
 use crate::sprite;
@@ -79,7 +79,7 @@ impl App {
         let max_len = 10.0;
         for i in 0..rays.len(){
             let view_dist = 1.0 - rays[i].length/max_len;
-            let h: f64 = 480.0 / rays[i].length;
+            let h: f64 = global::Y / rays[i].length;
             let mut dh = h;
             if dh > height {dh = height;}
             let iter = i as f64;
@@ -126,22 +126,22 @@ impl App {
             let transform_x: f64 = inv_det * (dir_y * sprite_x - dir_x * sprite_y);
             let transform_y: f64 = inv_det * (-plane_y * sprite_x + plane_x * sprite_y); //this is actually the depth inside the screen, that what Z is in 3D
 
-            let sprite_screen_x: i32 = ((600.0 / 2.0) * (1.0 + transform_x / transform_y)) as i32;
+            let sprite_screen_x: i32 = ((global::X / 2.0) * (1.0 + transform_x / transform_y)) as i32;
 
             //calculate height of the sprite on screen
-            let sprite_height: i32 = ((480.0 / transform_y) as i32).abs(); //using 'transformY' instead of the real distance prevents fisheye
+            let sprite_height: i32 = ((global::Y / transform_y) as i32).abs(); //using 'transformY' instead of the real distance prevents fisheye
             //calculate lowest and highest pixel to fill in current stripe
-            let mut draw_start_y: i32 = -sprite_height / 2 + 480 / 2;
+            let mut draw_start_y: i32 = -sprite_height / 2 + global::Y as i32 / 2;
             if draw_start_y < 0 { draw_start_y = 0; }
-            let mut draw_end_y: i32 = sprite_height / 2 + 480 / 2;
-            if draw_end_y >= 480 { draw_end_y = 480 - 1; }
+            let mut draw_end_y: i32 = sprite_height / 2 + global::Y as i32 / 2;
+            if draw_end_y >= global::Y as i32 { draw_end_y = global::Y as i32 - 1; }
 
             //calculate width of the sprite
-            let sprite_width = ((480.0 / transform_y) as i32).abs();
+            let sprite_width = ((global::Y / transform_y) as i32).abs();
             let mut draw_start_x: i32 = -sprite_width / 2 + sprite_screen_x;
             if draw_start_x < 0 { draw_start_x = 0; }
             let mut draw_end_x: i32 = sprite_width / 2 + sprite_screen_x;
-            if draw_end_x >= 600 { draw_end_x = 600 - 1; }
+            if draw_end_x >= global::X as i32 { draw_end_x = global::X as i32 - 1; }
 
             //loop through every vertical stripe of the sprite on screen
             for stripe in draw_start_x..draw_end_x
@@ -152,10 +152,10 @@ impl App {
                 //2) it's on the screen (left)
                 //3) it's on the screen (right)
                 //4) ZBuffer, with perpendicular distance
-                if transform_y > 0.0 && stripe > 0 && stripe < 600 && transform_y < depth_buffer[stripe as usize].length {
+                if transform_y > 0.0 && stripe > 0 && stripe < global::X as i32 && transform_y < depth_buffer[stripe as usize].length {
                     for y in draw_start_y..draw_end_y //for every pixel of the current stripe
                     {
-                        let d: i32 = (y) * 256 - 480 * 128 + sprite_height * 128; //256 and 128 factors to avoid floats
+                        let d: i32 = (y) * 256 - global::Y as i32 * 128 + sprite_height * 128; //256 and 128 factors to avoid floats
                         let tex_y: i32 = ((d * 256) / sprite_height) / 256;
                         if tex_y < 256 && tex_x < 256 && tex_y >= 0 && tex_x >= 0{
                             let mut pixel = (self.sprite_atlas[self.sprites[i].texture_index as usize])[tex_x as usize][tex_y as usize];
@@ -168,7 +168,6 @@ impl App {
                                 if pixel[3] < 255 {
                                     let bg = tex.get_pixel(stripe as u32, y as u32);
                                     let fga = pixel[3] as f64 / 255.0;
-                                    let ra  = 1.0 - (1.0 - fga) * (1.0);
                                     for i in 0..3{
                                         //fg.R * fg.A / r.A + bg.R * bg.A * (1 - fg.A) / r.A;
                                         pixel[i] = (pixel[i] as f64 * fga + bg[i] as f64 * 1.0 * (1.0 - fga)) as u8;

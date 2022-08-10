@@ -20,16 +20,14 @@ pub mod ray;
 pub mod player;
 pub mod map;
 pub mod sprite;
-
-const X: f64 = 600.0;
-const Y: f64 = 480.0;
+pub mod global;
 
 fn main() {
     // Change this to OpenGL::V2_1 if not working.
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window.
-    let mut window: Window = WindowSettings::new("raycast", [X, Y])
+    let mut window: Window = WindowSettings::new("raycast", [global::X, global::Y])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
@@ -56,7 +54,8 @@ fn main() {
     texture_atlas.push(new_texture("assets/wood.jpg".to_string()));
     texture_atlas.push(new_texture("assets/metal.jpg".to_string()));
 
-    sprite_atlas.push(new_texture("assets/sprites/test.png".to_string()));
+    sprite_atlas.push(new_texture("assets/sprites/badguy.png".to_string()));
+    sprite_atlas.push(new_texture("assets/sprites/skulls.png".to_string()));
 
     // Create a new game and run it.
     let mut app = app::App {
@@ -71,15 +70,15 @@ fn main() {
             map_dim: (10, 10),
             cell_arr: [
                 [1,1,1,1,1,1,1,1,1,1],
-                [1,1,0,1,0,1,0,1,0,1],
+                [1,1,0,1,0,0,1,0,1,1],
                 [1,0,0,0,0,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
-                [1,1,0,1,0,1,0,1,0,1],
-                [1,1,1,1,0,1,1,1,1,1],
+                [1,1,0,1,0,0,1,0,1,1],
+                [1,1,1,1,0,0,1,1,1,1],
+                [1,0,0,0,0,0,0,2,2,1],
                 [1,0,0,0,0,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
-                [1,0,0,0,0,0,0,0,0,1],
-                [1,1,1,1,1,1,1,1,1,1]
+                [1,1,1,3,3,3,3,1,1,1]
             ]
         },
         sprites: Vec::new(),
@@ -93,12 +92,13 @@ fn main() {
         debug: true,
         last_time_step: SystemTime::now().duration_since(UNIX_EPOCH).unwrap(),
         dt: 0.0,
-        map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, X, Y)),
-        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, X, Y/2.0))
+        map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, global::X, global::Y)),
+        sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, global::X, global::Y/2.0))
     };
 
-    app.sprites.push(sprite::Sprite{ pos: (2.5, 1.5), texture_index: 0, dist: 0.0});
-    app.sprites.push(sprite::Sprite{ pos: (3.5, 1.5), texture_index: 0, dist: 0.0});
+    app.sprites.push(sprite::Sprite{ pos: (8.0, 5.0), texture_index: 0, dist: 0.0});
+    app.sprites.push(sprite::Sprite{ pos: (8.0, 4.0), texture_index: 1, dist: 0.0});
+    app.sprites.push(sprite::Sprite{ pos: (8.0, 6.0), texture_index: 1, dist: 0.0});
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
