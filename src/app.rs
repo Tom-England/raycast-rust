@@ -3,7 +3,7 @@ use opengl_graphics::{GlGraphics, Texture, TextureSettings};
 use piston::{Button};
 
 use piston::input::{RenderArgs};
-use image::{ImageBuffer, RgbaImage, Rgba};
+use image::{ImageBuffer, RgbaImage};
 
 use std::time::{SystemTime, Duration, UNIX_EPOCH};
 
