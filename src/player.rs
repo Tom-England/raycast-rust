@@ -9,13 +9,9 @@ pub struct Player{
 
 impl Player {
     pub fn advance(&mut self, amount: f64, dt: f64, direction: f64, map: &[[u8; 10]; 10]) {
-        //let x = amount * dt * (self.view_direction * PI / 180.0).cos();
-        //let y = amount * dt * (self.view_direction * PI / 180.0).sin();
-        //self.pos.0 += x;
-        //self.pos.1 += y;
         let a = amount*dt;
-        if map[(self.pos.0 + (self.dir.0 * direction) * a ) as usize][self.pos.1 as usize] == 0 { self.pos.0 += self.dir.0 * a; }
-        if map[self.pos.0 as usize][(self.pos.1 + (self.dir.1 * direction) * a) as usize] == 0 { self.pos.1 += self.dir.1 * a; }
+        if map[(self.pos.0 + (self.dir.0 * direction) * a )as usize][self.pos.1 as usize] == 0 { self.pos.0 += self.dir.0 * a * direction; }
+        if map[self.pos.0 as usize][(self.pos.1 + (self.dir.1 * direction) * a) as usize] == 0 { self.pos.1 += self.dir.1 * a * direction; }
     }
 
     pub fn turn(&mut self, amount: f64, dt: f64) {

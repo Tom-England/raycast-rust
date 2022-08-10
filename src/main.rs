@@ -37,6 +37,7 @@ fn main() {
     let mut texture_atlas: Vec<[[image::Rgba<u8>; 256]; 256]> = Vec::new();
     let mut sprite_atlas: Vec<[[image::Rgba<u8>; 256]; 256]> = Vec::new();
 
+    /// Converts a dynamic image into a 2d array of pixels (Slightly faster to access, not strictly important)
     fn new_texture(path: String) -> [[image::Rgba<u8>; 256]; 256] {
         let mut arr: [[image::Rgba<u8>; 256]; 256] = [[image::Rgba([0,0,0,0]); 256]; 256];
         let image = image::open(path).unwrap();
@@ -54,6 +55,7 @@ fn main() {
     texture_atlas.push(new_texture("assets/wood.jpg".to_string()));
     texture_atlas.push(new_texture("assets/metal.jpg".to_string()));
 
+    // Load Sprites
     sprite_atlas.push(new_texture("assets/sprites/badguy.png".to_string()));
     sprite_atlas.push(new_texture("assets/sprites/skulls.png".to_string()));
 
@@ -96,6 +98,7 @@ fn main() {
         sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, global::X, global::Y/2.0))
     };
 
+    // Create some sprites
     app.sprites.push(sprite::Sprite{ pos: (8.0, 5.0), texture_index: 0, dist: 0.0});
     app.sprites.push(sprite::Sprite{ pos: (8.0, 4.0), texture_index: 1, dist: 0.0});
     app.sprites.push(sprite::Sprite{ pos: (8.0, 6.0), texture_index: 1, dist: 0.0});

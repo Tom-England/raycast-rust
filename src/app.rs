@@ -38,6 +38,7 @@ impl App {
         const GREY: [f32; 4] = [0.2,0.2,0.2, 1.0];
         const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
         
+        // Create the world texture and draw the sprites
         let mut map_img = App::create_texture(&self.play.rays, &self.texture_atlas, args.window_size[0], args.window_size[1]);
         self.draw_sprites(&mut map_img);
 
@@ -50,7 +51,6 @@ impl App {
             self.sky_image.draw(&self.sky, &ds, c.transform, gl);
 
             // Draw the level
-            
             let map_texture: Texture = Texture::from_image(&map_img, &TextureSettings::new());
             self.map_image.draw(&map_texture, &ds, c.transform, gl);
 
@@ -65,6 +65,7 @@ impl App {
         });
     }
 
+    /// Gets the nearest pixel from a texture for the given co-ordinate
     fn get_pixel(x: i32, y: f64, img: &[[image::Rgba<u8>; 256]; 256]) -> image::Rgba<u8>{ 
         //let x_pos = (img.len() as f64 * x) as usize;
         let y_pos = (img[0].len() as f64 * y) as usize;
@@ -72,20 +73,26 @@ impl App {
         return img[x as usize][y_pos];
     }
 
+    /// Uses the length of the provided rays to draw the world as a series of textured rectangles
     fn create_texture(rays: &Vec<ray::Ray>, tex: &Vec<[[image::Rgba<u8>; 256]; 256]>, width: f64, height: f64) -> image::RgbaImage{
-        
         let mut img: RgbaImage = ImageBuffer::new(width as u32, height as u32);
+        // Calculate the width of each ray (for best results, ensure that the raycount is a factor of the screen width)
         let width = width / rays.len() as f64;
         let max_len = 10.0;
         for i in 0..rays.len(){
+            // Calculate how far between the player and the max render distance the intersected wall is
             let view_dist = 1.0 - rays[i].length/max_len;
+
+            // Calculate the height of the wall segment
             let h: f64 = global::Y / rays[i].length;
             let mut dh = h;
             if dh > height {dh = height;}
             let iter = i as f64;
             
+            // Wall drawing loop
             for x in (iter * width) as u32..(iter * width+width) as u32{
                 for y in (height/2.0 - dh/2.0) as u32..(height/2.0 - dh/2.0 + dh) as u32 - 1{
+                    // Get the correct pixel colour and shade it based off the view distance
                     let pixel_y = (y as f64 - (height/2.0 - h/2.0)) / h;
                     let index: usize = (rays[i].texture_index - 1) as usize;
                     let mut pixel = App::get_pixel(rays[i].texture_pos, pixel_y, &tex[index]);
@@ -93,15 +100,16 @@ impl App {
                         let new_colour = pixel[i] as f64 * view_dist;
                         pixel[i] = new_colour as u8;
                     }
+                    // Draw the pixel to the image
                     img.put_pixel(x, y, pixel);
                     
                 }
             }
-            
         }
         return img;
     }
 
+    /// Method for overlaying the games sprites over the pre-drawn environment
     fn draw_sprites(&mut self, tex: &mut image::RgbaImage) {
         let depth_buffer = &self.play.rays;
         // Update distances from player
@@ -185,6 +193,7 @@ impl App {
         } 
     }
 
+    /// Method for handling updates in the game such as moving the player and updating the raycasts
     pub fn update(&mut self) {
 
         self.dt = (SystemTime::now().duration_since(UNIX_EPOCH).unwrap() - self.last_time_step).as_secs_f64();
@@ -197,14 +206,15 @@ impl App {
             self.play.turn(-3.0, self.dt);
         }
         if self.moving_forward {
-            self.play.advance(0.05, 1.0,  self.dt, &self.map.cell_arr);
+            self.play.advance(2.0, 1.0,  self.dt, &self.map.cell_arr);
         }
         else if self.moving_back {
-            self.play.advance(0.05, -1.0, self.dt, &self.map.cell_arr);
+            self.play.advance(2.0, -1.0, self.dt, &self.map.cell_arr);
         }
         self.find_ray_intersections();
     }
 
+    /// Calculates the ray intersections and updates the Z-Buffer through the players ray vector
     fn find_ray_intersections(&mut self){
         let rc: i32 = 600;
         let (plane_x, plane_y): (f64, f64) = self.play.plane;
