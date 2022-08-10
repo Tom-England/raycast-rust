@@ -80,6 +80,9 @@ impl App {
         let width = width / rays.len() as f64;
         let max_len = 10.0;
         for i in 0..rays.len(){
+            let mut shadow: bool = false;
+            if rays[i].side == 1 { shadow = true; }
+            
             // Calculate how far between the player and the max render distance the intersected wall is
             let view_dist = 1.0 - rays[i].length/max_len;
 
@@ -97,7 +100,12 @@ impl App {
                     let index: usize = (rays[i].texture_index - 1) as usize;
                     let mut pixel = App::get_pixel(rays[i].texture_pos, pixel_y, &tex[index]);
                     for i in 0..3{
-                        let new_colour = pixel[i] as f64 * view_dist;
+                        let mut new_colour = pixel[i] as f64 * view_dist;
+                        if shadow {
+                            new_colour = new_colour / 2.0;
+                            
+                        }
+                        
                         pixel[i] = new_colour as u8;
                     }
                     // Draw the pixel to the image
@@ -222,7 +230,7 @@ impl App {
 
     /// Calculates the ray intersections and updates the Z-Buffer through the players ray vector
     fn find_ray_intersections(&mut self){
-        let rc: i32 = 60;
+        let rc: i32 = 600;
         let (plane_x, plane_y): (f64, f64) = self.play.plane;
         let (dir_x, dir_y): (f64, f64) = self.play.dir;
         let (pos_x, pos_y) = self.play.pos;
@@ -274,7 +282,8 @@ impl App {
             let mut ray = ray::Ray{
                 length: 0.0,
                 texture_index: 0,
-                texture_pos: 0
+                texture_pos: 0,
+                side: 0
             };
 
             //perform DDA
@@ -320,6 +329,7 @@ impl App {
 
             ray.length = perp_wall_dist;
             ray.texture_pos = tex_x;
+            ray.side = side;
 
             self.play.rays.push(ray);
         }

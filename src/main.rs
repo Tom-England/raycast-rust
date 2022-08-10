@@ -91,7 +91,7 @@ fn main() {
         turning_right: false,
         moving_forward: false,
         moving_back: false,
-        debug: true,
+        debug: false,
         last_time_step: SystemTime::now().duration_since(UNIX_EPOCH).unwrap(),
         dt: 0.0,
         map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, global::X, global::Y)),
