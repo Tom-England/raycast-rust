@@ -6,14 +6,14 @@ This project contains a Wolfenstein 3D inspired raycasting engine built in Rust 
 
 Cargo Run to start the project
 
+## Running
+To run the project, clone it then run using: `cargo run --release`
+
 ## Todo
-* Sprites
-* Directional Shadows
+* Moving Sprites
+* Map Builder
 
 ## Movement
 Use the arrow keys to turn and move forward or backwards
-
-## Known Issues
-Poor performance when standing close to a wall
 
 Tom England 2022
