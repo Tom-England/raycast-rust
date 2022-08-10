@@ -19,6 +19,7 @@ pub mod app;
 pub mod ray;
 pub mod player;
 pub mod map;
+pub mod sprite;
 
 const X: f64 = 600.0;
 const Y: f64 = 480.0;
@@ -36,6 +37,7 @@ fn main() {
 
 
     let mut texture_atlas: Vec<[[image::Rgba<u8>; 256]; 256]> = Vec::new();
+    let mut sprite_atlas: Vec<[[image::Rgba<u8>; 256]; 256]> = Vec::new();
 
     fn new_texture(path: String) -> [[image::Rgba<u8>; 256]; 256] {
         let mut arr: [[image::Rgba<u8>; 256]; 256] = [[image::Rgba([0,0,0,0]); 256]; 256];
@@ -54,6 +56,8 @@ fn main() {
     texture_atlas.push(new_texture("assets/wood.jpg".to_string()));
     texture_atlas.push(new_texture("assets/metal.jpg".to_string()));
 
+    sprite_atlas.push(new_texture("assets/sprites/test.png".to_string()));
+
     // Create a new game and run it.
     let mut app = app::App {
         gl: GlGraphics::new(opengl),
@@ -67,18 +71,20 @@ fn main() {
             map_dim: (10, 10),
             cell_arr: [
                 [1,1,1,1,1,1,1,1,1,1],
-                [1,0,2,2,2,0,0,0,0,1],
+                [1,1,0,1,0,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,1],
+                [1,1,0,1,0,1,0,1,0,1],
+                [1,1,1,1,0,1,1,1,1,1],
                 [1,0,0,0,0,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
                 [1,0,0,0,0,0,0,0,0,1],
-                [1,1,1,1,1,0,1,1,1,1],
-                [1,0,0,0,0,0,0,0,0,1],
-                [1,0,1,0,3,0,0,3,0,1],
-                [1,0,0,0,3,0,0,3,0,1],
-                [1,1,1,1,3,3,3,3,1,1]
+                [1,1,1,1,1,1,1,1,1,1]
             ]
         },
+        sprites: Vec::new(),
         texture_atlas: texture_atlas,
+        sprite_atlas: sprite_atlas,
         sky: Texture::from_path(Path::new("assets/sky.png"), &TextureSettings::new()).unwrap(),
         turning_left: false,
         turning_right: false,
@@ -90,6 +96,9 @@ fn main() {
         map_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, X, Y)),
         sky_image: Image::new().rect(rectangle::rectangle_by_corners(0.0, 0.0, X, Y/2.0))
     };
+
+    app.sprites.push(sprite::Sprite{ pos: (2.5, 1.5), texture_index: 0, dist: 0.0});
+    app.sprites.push(sprite::Sprite{ pos: (3.5, 1.5), texture_index: 0, dist: 0.0});
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {

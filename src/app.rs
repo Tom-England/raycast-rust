@@ -3,19 +3,22 @@ use opengl_graphics::{GlGraphics, Texture, TextureSettings};
 use piston::{Button};
 
 use piston::input::{RenderArgs};
-use image::{ImageBuffer, RgbaImage};
+use image::{ImageBuffer, RgbaImage, Rgba};
 
 use std::time::{SystemTime, Duration, UNIX_EPOCH};
 
 use crate::player;
 use crate::map;
 use crate::ray;
+use crate::sprite;
 
 pub struct App {
     pub gl: GlGraphics, // OpenGL drawing backend.
     pub play: player::Player,
     pub map: map::Map,
+    pub sprites: Vec<sprite::Sprite>,
     pub texture_atlas: Vec<[[image::Rgba<u8>; 256]; 256]>,
+    pub sprite_atlas: Vec<[[image::Rgba<u8>; 256]; 256]>,
     pub sky: Texture,
     pub turning_left: bool,
     pub turning_right: bool,
@@ -34,6 +37,9 @@ impl App {
 
         const GREY: [f32; 4] = [0.2,0.2,0.2, 1.0];
         const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
+        
+        let mut map_img = App::create_texture(&self.play.rays, &self.texture_atlas, args.window_size[0], args.window_size[1]);
+        self.draw_sprites(&mut map_img);
 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
@@ -44,7 +50,7 @@ impl App {
             self.sky_image.draw(&self.sky, &ds, c.transform, gl);
 
             // Draw the level
-            let map_img = App::create_texture(&self.play.rays, &self.texture_atlas, args.window_size[0], args.window_size[1]);
+            
             let map_texture: Texture = Texture::from_image(&map_img, &TextureSettings::new());
             self.map_image.draw(&map_texture, &ds, c.transform, gl);
 
@@ -53,7 +59,7 @@ impl App {
 
             // Debug
             if self.debug{       
-                print!("\rfps: {:05.0}", (1.0/self.dt).floor());
+                //print!("\rfps: {:05.0}", (1.0/self.dt).floor());
             }
 
         });
@@ -73,7 +79,7 @@ impl App {
         let max_len = 10.0;
         for i in 0..rays.len(){
             let view_dist = 1.0 - rays[i].length/max_len;
-            let h: f64 = 280.0 / rays[i].length;
+            let h: f64 = 480.0 / rays[i].length;
             let mut dh = h;
             if dh > height {dh = height;}
             let iter = i as f64;
@@ -94,6 +100,72 @@ impl App {
             
         }
         return img;
+    }
+
+    fn draw_sprites(&mut self, tex: &mut image::RgbaImage) {
+        let depth_buffer = &self.play.rays;
+        // Update distances from player
+        for i in 0..self.sprites.len(){
+            self.sprites[i].dist = self.sprites[i].eucl_dist(self.play.pos);
+        }
+        // Sort the sprites by their distance from the player
+        self.sprites.sort_by(|a, b| a.dist.partial_cmp(&b.dist).unwrap());
+
+        let (pos_x, pos_y) = self.play.pos;
+        let (plane_x, plane_y): (f64, f64) = self.play.plane;
+        let (dir_x, dir_y): (f64, f64) = self.play.dir;
+
+        // Draw the sprites
+        for i in 0..self.sprites.len(){
+            //translate sprite position to relative to camera
+            let sprite_x: f64 = self.sprites[i].pos.0 - pos_x;
+            let sprite_y: f64 = self.sprites[i].pos.1 - pos_y;
+
+            let inv_det: f64 = 1.0 / (plane_x * dir_y - dir_x * plane_y); //required for correct matrix multiplication
+
+            let transform_x: f64 = inv_det * (dir_y * sprite_x - dir_x * sprite_y);
+            let transform_y: f64 = inv_det * (-plane_y * sprite_x + plane_x * sprite_y); //this is actually the depth inside the screen, that what Z is in 3D
+
+            let sprite_screen_x: i32 = ((600.0 / 2.0) * (1.0 + transform_x / transform_y)) as i32;
+
+            //calculate height of the sprite on screen
+            let sprite_height: i32 = ((480.0 / transform_y) as i32).abs(); //using 'transformY' instead of the real distance prevents fisheye
+            //calculate lowest and highest pixel to fill in current stripe
+            let mut draw_start_y: i32 = -sprite_height / 2 + 480 / 2;
+            if draw_start_y < 0 { draw_start_y = 0; }
+            let mut draw_end_y: i32 = sprite_height / 2 + 480 / 2;
+            if draw_end_y >= 480 { draw_end_y = 480 - 1; }
+
+            //calculate width of the sprite
+            let sprite_width = ((480.0 / transform_y) as i32).abs();
+            let mut draw_start_x: i32 = -sprite_width / 2 + sprite_screen_x;
+            if draw_start_x < 0 { draw_start_x = 0; }
+            let mut draw_end_x: i32 = sprite_width / 2 + sprite_screen_x;
+            if draw_end_x >= 600 { draw_end_x = 600 - 1; }
+
+            //loop through every vertical stripe of the sprite on screen
+            for stripe in draw_start_x..draw_end_x
+            {
+                let tex_x = 256 * (stripe - (-sprite_width / 2 + sprite_screen_x)) * 256 / sprite_width / 256;
+                //the conditions in the if are:
+                //1) it's in front of camera plane so you don't see things behind you
+                //2) it's on the screen (left)
+                //3) it's on the screen (right)
+                //4) ZBuffer, with perpendicular distance
+                if transform_y > 0.0 && stripe > 0 && stripe < 600 && transform_y < depth_buffer[stripe as usize].length {
+                    for y in draw_start_y..draw_end_y //for every pixel of the current stripe
+                    {
+                        let d: i32 = (y) * 256 - 480 * 128 + sprite_height * 128; //256 and 128 factors to avoid floats
+                        let tex_y: i32 = ((d * 256) / sprite_height) / 256;
+                        //Uint32 color = texture[sprite[spriteOrder[i]].texture][texWidth * texY + texX]; //get current color from the texture
+                        let pixel = (self.sprite_atlas[self.sprites[i].texture_index as usize])[tex_x as usize][tex_y as usize];
+                        //if((color & 0x00FFFFFF) != 0) buffer[y][stripe] = color; //paint pixel if it isn't black, black is the invisible color
+                        if pixel != image::Rgba([0,0,0,0]) { tex.put_pixel(stripe as u32, y as u32, pixel); }
+                    }
+                }
+                
+            }
+        } 
     }
 
     pub fn update(&mut self) {
