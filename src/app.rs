@@ -109,6 +109,12 @@ impl App {
         return img;
     }
 
+    fn sample_depth_buffer(depth_buffer: &Vec<ray::Ray>, pos: i32, screen_width: i32) -> f64 {
+        let ratio = pos as f64 /screen_width as f64;
+        let index = (depth_buffer.len() - 1) as f64 * ratio;
+        return depth_buffer[index as usize].length;
+    }
+
     /// Method for overlaying the games sprites over the pre-drawn environment
     fn draw_sprites(&mut self, tex: &mut image::RgbaImage) {
         let depth_buffer = &self.play.rays;
@@ -160,7 +166,7 @@ impl App {
                 //2) it's on the screen (left)
                 //3) it's on the screen (right)
                 //4) ZBuffer, with perpendicular distance
-                if transform_y > 0.0 && stripe > 0 && stripe < global::X as i32 && transform_y < depth_buffer[stripe as usize].length {
+                if transform_y > 0.0 && stripe > 0 && stripe < global::X as i32 && transform_y < App::sample_depth_buffer(depth_buffer, stripe, global::X as i32) {
                     for y in draw_start_y..draw_end_y //for every pixel of the current stripe
                     {
                         let d: i32 = (y) * 256 - global::Y as i32 * 128 + sprite_height * 128; //256 and 128 factors to avoid floats
@@ -169,7 +175,7 @@ impl App {
                             let mut pixel = (self.sprite_atlas[self.sprites[i].texture_index as usize])[tex_x as usize][tex_y as usize];
                             if pixel != image::Rgba([0,0,0,0]) { 
                                 for i in 0..3{
-                                    let view_dist = 1.0 - depth_buffer[stripe as usize].length/10.0;
+                                    let view_dist = 1.0 - App::sample_depth_buffer(depth_buffer, stripe, global::X as i32)/10.0;
                                     let new_colour = pixel[i] as f64 * view_dist;
                                     pixel[i] = new_colour as u8;
                                 }
@@ -216,7 +222,7 @@ impl App {
 
     /// Calculates the ray intersections and updates the Z-Buffer through the players ray vector
     fn find_ray_intersections(&mut self){
-        let rc: i32 = 600;
+        let rc: i32 = 60;
         let (plane_x, plane_y): (f64, f64) = self.play.plane;
         let (dir_x, dir_y): (f64, f64) = self.play.dir;
         let (pos_x, pos_y) = self.play.pos;
