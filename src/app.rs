@@ -59,7 +59,7 @@ impl App {
 
             // Debug
             if self.debug{       
-                //print!("\rfps: {:05.0}", (1.0/self.dt).floor());
+                print!("\rfps: {:05.0}", (1.0/self.dt).floor());
             }
 
         });
@@ -158,9 +158,16 @@ impl App {
                         let d: i32 = (y) * 256 - 480 * 128 + sprite_height * 128; //256 and 128 factors to avoid floats
                         let tex_y: i32 = ((d * 256) / sprite_height) / 256;
                         //Uint32 color = texture[sprite[spriteOrder[i]].texture][texWidth * texY + texX]; //get current color from the texture
-                        let pixel = (self.sprite_atlas[self.sprites[i].texture_index as usize])[tex_x as usize][tex_y as usize];
+                        let mut pixel = (self.sprite_atlas[self.sprites[i].texture_index as usize])[tex_x as usize][tex_y as usize];
                         //if((color & 0x00FFFFFF) != 0) buffer[y][stripe] = color; //paint pixel if it isn't black, black is the invisible color
-                        if pixel != image::Rgba([0,0,0,0]) { tex.put_pixel(stripe as u32, y as u32, pixel); }
+                        if pixel != image::Rgba([0,0,0,0]) { 
+                            for i in 0..3{
+                                let view_dist = 1.0 - depth_buffer[stripe as usize].length/10.0;
+                                let new_colour = pixel[i] as f64 * view_dist;
+                                pixel[i] = new_colour as u8;
+                            }
+                            tex.put_pixel(stripe as u32, y as u32, pixel); 
+                        }
                     }
                 }
                 
