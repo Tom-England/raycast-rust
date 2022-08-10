@@ -81,7 +81,7 @@ impl App {
         let max_len = 10.0;
         for i in 0..rays.len(){
             let mut shadow: bool = false;
-            if rays[i].side == 1 { shadow = true; }
+            if rays[i].side == 0 || rays[i].side == 2 { shadow = true; }
             
             // Calculate how far between the player and the max render distance the intersected wall is
             let view_dist = 1.0 - rays[i].length/max_len;
@@ -294,14 +294,24 @@ impl App {
                 {
                     side_dist_x += delta_dist_x;
                     map_x += step_x;
-                    side = 0;
+                    if ray_dir_x < 0.0{
+                        side = 0;
+                    }
+                    else {
+                        side = 1;
+                    }
                 }
                 else
                 {
                     side_dist_y += delta_dist_y;
                     //println!("{0} + {1}", map_y, step_y);
                     map_y += step_y;
-                    side = 1;
+                    if ray_dir_y < 0.0{
+                        side = 2;
+                    }
+                    else {
+                        side = 3;
+                    }
                 }
                 //Check if ray has hit a wall
                 let ti: u8;
@@ -312,20 +322,20 @@ impl App {
                 }
             }
             //Calculate distance projected on camera direction (Euclidean distance would give fisheye effect!)
-            if side == 0 { perp_wall_dist = side_dist_x - delta_dist_x; }
+            if side == 0 || side == 1{ perp_wall_dist = side_dist_x - delta_dist_x; }
             else { perp_wall_dist = side_dist_y - delta_dist_y; }
 
             //texturing calculations
             //calculate value of wallX
             let mut wall_x: f64; //where exactly the wall was hit
-            if side == 0 { wall_x = pos_y + perp_wall_dist * ray_dir_y; }
+            if side == 0 || side == 1 { wall_x = pos_y + perp_wall_dist * ray_dir_y; }
             else { wall_x = pos_x + perp_wall_dist * ray_dir_x; }
             wall_x -= wall_x.floor();
 
             //x coordinate on the texture
             let mut tex_x = (wall_x * 256.0).floor() as i32;
-            if side == 0 && ray_dir_x > 0.0 { tex_x = 256 - tex_x - 1; }
-            if side == 1 && ray_dir_y < 0.0 { tex_x = 256 - tex_x - 1; }
+            if side == 0 || side == 1 && ray_dir_x > 0.0 { tex_x = 256 - tex_x - 1; }
+            if side == 2 || side == 3 && ray_dir_y < 0.0 { tex_x = 256 - tex_x - 1; }
 
             ray.length = perp_wall_dist;
             ray.texture_pos = tex_x;
