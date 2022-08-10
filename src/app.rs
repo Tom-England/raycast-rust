@@ -109,7 +109,7 @@ impl App {
             self.sprites[i].dist = self.sprites[i].eucl_dist(self.play.pos);
         }
         // Sort the sprites by their distance from the player
-        self.sprites.sort_by(|a, b| a.dist.partial_cmp(&b.dist).unwrap());
+        self.sprites.sort_by(|a, b| b.dist.partial_cmp(&a.dist).unwrap());
 
         let (pos_x, pos_y) = self.play.pos;
         let (plane_x, plane_y): (f64, f64) = self.play.plane;
