@@ -3,7 +3,7 @@ use opengl_graphics::{GlGraphics, Texture, TextureSettings};
 use piston::{Button};
 
 use piston::input::{RenderArgs};
-use image::{ImageBuffer, RgbaImage};
+use image::{ImageBuffer, RgbaImage, GenericImageView};
 
 use std::time::{SystemTime, Duration, UNIX_EPOCH};
 
@@ -164,6 +164,16 @@ impl App {
                                     let view_dist = 1.0 - depth_buffer[stripe as usize].length/10.0;
                                     let new_colour = pixel[i] as f64 * view_dist;
                                     pixel[i] = new_colour as u8;
+                                }
+                                if pixel[3] < 255 {
+                                    let bg = tex.get_pixel(stripe as u32, y as u32);
+                                    let fga = pixel[3] as f64 / 255.0;
+                                    let ra  = 1.0 - (1.0 - fga) * (1.0);
+                                    for i in 0..3{
+                                        //fg.R * fg.A / r.A + bg.R * bg.A * (1 - fg.A) / r.A;
+                                        pixel[i] = (pixel[i] as f64 * fga + bg[i] as f64 * 1.0 * (1.0 - fga)) as u8;
+                                    }
+                                    if bg[3] == 255 {pixel[3] = 255;}
                                 }
                                 tex.put_pixel(stripe as u32, y as u32, pixel); 
                             }
