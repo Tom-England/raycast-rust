@@ -21,7 +21,7 @@ pub mod player;
 pub mod map;
 pub mod sprite;
 pub mod global;
-pub mod inputHandler;
+pub mod input_handler;
 
 fn main() {
     // Change this to OpenGL::V2_1 if not working.
@@ -68,7 +68,7 @@ fn main() {
             dir: (-1.0, 0.0),
             pos: (3.0, 5.0),
             rays: Vec::new(),
-            ih: inputHandler::InputHandler::new()
+            ih: input_handler::InputHandler::new()
         },
         map: map::Map{
             map_dim: (10, 10),

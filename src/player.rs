@@ -1,5 +1,5 @@
 use crate::ray;
-use crate::inputHandler::InputHandler;
+use crate::input_handler::InputHandler;
 pub struct Player{
     pub plane: (f64, f64),
     pub dir: (f64, f64),

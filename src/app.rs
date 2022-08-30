@@ -1,6 +1,5 @@
 use graphics::Image;
 use opengl_graphics::{GlGraphics, Texture, TextureSettings};
-use piston::{Button};
 
 use piston::input::{RenderArgs};
 use image::{ImageBuffer, RgbaImage};
