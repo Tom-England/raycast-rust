@@ -21,6 +21,7 @@ pub mod player;
 pub mod map;
 pub mod sprite;
 pub mod global;
+pub mod inputHandler;
 
 fn main() {
     // Change this to OpenGL::V2_1 if not working.
@@ -67,6 +68,7 @@ fn main() {
             dir: (-1.0, 0.0),
             pos: (3.0, 5.0),
             rays: Vec::new(),
+            ih: inputHandler::InputHandler::new()
         },
         map: map::Map{
             map_dim: (10, 10),
@@ -74,8 +76,8 @@ fn main() {
                 [1,1,1,1,1,1,1,1,1,1],
                 [1,1,0,1,0,0,1,0,1,1],
                 [1,0,0,0,0,0,0,0,0,1],
-                [1,0,0,0,0,0,0,0,0,1],
-                [1,1,0,1,0,0,1,0,1,1],
+                [3,0,0,0,0,0,0,0,0,1],
+                [1,3,0,1,0,0,1,0,1,1],
                 [1,1,1,1,0,0,1,1,1,1],
                 [1,0,0,0,0,0,0,2,2,1],
                 [1,0,0,0,0,0,0,0,0,1],
@@ -87,10 +89,6 @@ fn main() {
         texture_atlas: texture_atlas,
         sprite_atlas: sprite_atlas,
         sky: Texture::from_path(Path::new("assets/sky.png"), &TextureSettings::new()).unwrap(),
-        turning_left: false,
-        turning_right: false,
-        moving_forward: false,
-        moving_back: false,
         debug: false,
         last_time_step: SystemTime::now().duration_since(UNIX_EPOCH).unwrap(),
         dt: 0.0,
@@ -103,6 +101,8 @@ fn main() {
     app.sprites.push(sprite::Sprite{ pos: (8.0, 4.0), texture_index: 1, dist: 0.0});
     app.sprites.push(sprite::Sprite{ pos: (8.0, 6.0), texture_index: 1, dist: 0.0});
 
+    app.sprites.push(sprite::Sprite{ pos: (3.5, 1.5), texture_index: 1, dist: 0.0});
+
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
@@ -114,11 +114,11 @@ fn main() {
         }
 
         if let Some(ref args) = e.press_args() {
-            app.key_press(args);
+            app.play.ih.key_press(args);
         }
 
         if let Some(ref args) = e.release_args() {
-            app.key_up(args);
+            app.play.ih.key_up(args);
         }
     }
 }

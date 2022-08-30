@@ -20,10 +20,6 @@ pub struct App {
     pub texture_atlas: Vec<[[image::Rgba<u8>; 256]; 256]>,
     pub sprite_atlas: Vec<[[image::Rgba<u8>; 256]; 256]>,
     pub sky: Texture,
-    pub turning_left: bool,
-    pub turning_right: bool,
-    pub moving_forward: bool,
-    pub moving_back: bool,
     pub debug: bool,
     pub last_time_step: Duration,
     pub dt: f64,
@@ -213,18 +209,7 @@ impl App {
         self.dt = (SystemTime::now().duration_since(UNIX_EPOCH).unwrap() - self.last_time_step).as_secs_f64();
         self.last_time_step = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
 
-        if self.turning_left {
-            self.play.turn(3.0, self.dt);
-        }
-        else if self.turning_right {
-            self.play.turn(-3.0, self.dt);
-        }
-        if self.moving_forward {
-            self.play.advance(2.0, 1.0,  self.dt, &self.map.cell_arr);
-        }
-        else if self.moving_back {
-            self.play.advance(2.0, -1.0, self.dt, &self.map.cell_arr);
-        }
+        self.play.update(self.dt, &self.map.cell_arr);
         self.find_ray_intersections();
     }
 
@@ -345,48 +330,5 @@ impl App {
         }
     }
 
-    pub fn key_press(&mut self, args: &Button) {
-		use piston::Button::Keyboard;
-		use piston::Key;		
-		
-        if *args == Keyboard(Key::Left) {
-            self.turning_left = true;
-            self.turning_right = false;
-        }
 
-        if *args == Keyboard(Key::Right) {
-            self.turning_left = false;
-            self.turning_right = true;
-        }
-
-        if *args == Keyboard(Key::Up) {
-            self.moving_forward = true;
-            self.moving_back = false;
-        }
-
-        if *args == Keyboard(Key::Down) {
-            self.moving_forward = false;
-            self.moving_back = true;
-        }
-    }
-    pub fn key_up(&mut self, args: &Button) {
-		use piston::Button::Keyboard;
-		use piston::Key;		
-		
-        if *args == Keyboard(Key::Left) {
-            self.turning_left = false;
-        }
-
-        if *args == Keyboard(Key::Right) {
-            self.turning_right = false;
-        }
-
-        if *args == Keyboard(Key::Up) {
-            self.moving_forward = false;
-        }
-
-        if *args == Keyboard(Key::Down) {
-            self.moving_back = false;
-        }
-    }
 }

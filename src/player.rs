@@ -1,10 +1,11 @@
 use crate::ray;
-
+use crate::inputHandler::InputHandler;
 pub struct Player{
     pub plane: (f64, f64),
     pub dir: (f64, f64),
     pub pos: (f64, f64),
-    pub rays: Vec<ray::Ray>
+    pub rays: Vec<ray::Ray>,
+    pub ih: InputHandler
 }
 
 impl Player {
@@ -23,5 +24,18 @@ impl Player {
         let old_plane_x = self.plane.0;
         self.plane.0 = self.plane.0 * a.cos() - self.plane.1 * a.sin();
         self.plane.1 = old_plane_x * a.sin() + self.plane.1 * a.cos();
+    }
+
+    pub fn update(&mut self, dt: f64, map: &[[u8; 10]; 10]){
+        match self.ih.turn{
+            -1 => self.turn(3.0, dt),
+            1 => self.turn(-3.0, dt),
+            _ => ()
+        }
+        match self.ih.adv{
+            -1 => self.advance(2.0, -1.0, dt, map),
+            1 => self.advance(2.0, 1.0,  dt, map),
+            _ => ()
+        }
     }
 }
